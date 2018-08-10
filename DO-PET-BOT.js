@@ -1,16 +1,21 @@
 /* Templates */
 
-var template_dir = Helper.getAbsoluteScriptDirPath() + "/templates/";
+var template_dir = Helper.getAbsoluteScriptDirPath() + "/templates";
+var minimap_dir = template_dir + "/minimap";
+var mm_level_dir = minimap_dir + "/levels";
+var mm_mapnames_dir = minimap_dir + "/mapnames";
 
-var mm_level_1_tpl = Vision.loadImage(template_dir + "mm_level_1_tpl.png");
-var mm_level_2_tpl = Vision.loadImage(template_dir + "mm_level_2_tpl.png");
-var mm_level_3_tpl = Vision.loadImage(template_dir + "mm_level_3_tpl.png");
-var mm_level_4_tpl = Vision.loadImage(template_dir + "mm_level_4_tpl.png");
-var mm_level_5_tpl = Vision.loadImage(template_dir + "mm_level_5_tpl.png");
-var mm_level_6_tpl = Vision.loadImage(template_dir + "mm_level_6_tpl.png");
-var mm_level_7_tpl = Vision.loadImage(template_dir + "mm_level_7_tpl.png");
-var mm_level_8_tpl = Vision.loadImage(template_dir + "mm_level_8_tpl.png");
-var mm_level_9_tpl = Vision.loadImage(template_dir + "mm_level_9_tpl.png");
+var no_velocity_ref = Vision.loadImage(minimap_dir + "/no_velocity_ref.png");
+
+var mm_level_1_tpl = Vision.loadImage(mm_level_dir + "/1_tpl.png");
+var mm_level_2_tpl = Vision.loadImage(mm_level_dir + "/2_tpl.png");
+var mm_level_3_tpl = Vision.loadImage(mm_level_dir + "/3_tpl.png");
+var mm_level_4_tpl = Vision.loadImage(mm_level_dir + "/4_tpl.png");
+var mm_level_5_tpl = Vision.loadImage(mm_level_dir + "/5_tpl.png");
+var mm_level_6_tpl = Vision.loadImage(mm_level_dir + "/6_tpl.png");
+var mm_level_7_tpl = Vision.loadImage(mm_level_dir + "/7_tpl.png");
+var mm_level_8_tpl = Vision.loadImage(mm_level_dir + "/8_tpl.png");
+var mm_level_9_tpl = Vision.loadImage(mm_level_dir + "/9_tpl.png");
 
 var mm_level_tpls = [
 	mm_level_1_tpl, mm_level_2_tpl, mm_level_3_tpl,
@@ -18,7 +23,45 @@ var mm_level_tpls = [
 	mm_level_7_tpl, mm_level_8_tpl, mm_level_9_tpl,
 ];
 
-var no_velocity_ref = Vision.loadImage(template_dir + "no_velocity_ref.png")
+var map_11 = Vision.loadImage(mm_mapnames_dir + "/11.png");
+var map_12 = Vision.loadImage(mm_mapnames_dir + "/12.png");
+var map_13 = Vision.loadImage(mm_mapnames_dir + "/13.png");
+var map_14 = Vision.loadImage(mm_mapnames_dir + "/14.png");
+var map_15 = Vision.loadImage(mm_mapnames_dir + "/15.png");
+var map_16 = Vision.loadImage(mm_mapnames_dir + "/16.png");
+var map_17 = Vision.loadImage(mm_mapnames_dir + "/17.png");
+var map_18 = Vision.loadImage(mm_mapnames_dir + "/18.png");
+var map_21 = Vision.loadImage(mm_mapnames_dir + "/21.png");
+var map_22 = Vision.loadImage(mm_mapnames_dir + "/22.png");
+var map_23 = Vision.loadImage(mm_mapnames_dir + "/23.png");
+var map_24 = Vision.loadImage(mm_mapnames_dir + "/24.png");
+var map_25 = Vision.loadImage(mm_mapnames_dir + "/25.png");
+var map_26 = Vision.loadImage(mm_mapnames_dir + "/26.png");
+var map_27 = Vision.loadImage(mm_mapnames_dir + "/27.png");
+var map_28 = Vision.loadImage(mm_mapnames_dir + "/28.png");
+var map_31 = Vision.loadImage(mm_mapnames_dir + "/31.png");
+var map_32 = Vision.loadImage(mm_mapnames_dir + "/32.png");
+var map_33 = Vision.loadImage(mm_mapnames_dir + "/33.png");
+var map_34 = Vision.loadImage(mm_mapnames_dir + "/34.png");
+var map_35 = Vision.loadImage(mm_mapnames_dir + "/35.png");
+var map_36 = Vision.loadImage(mm_mapnames_dir + "/36.png");
+var map_37 = Vision.loadImage(mm_mapnames_dir + "/37.png");
+var map_38 = Vision.loadImage(mm_mapnames_dir + "/38.png");
+var map_41 = Vision.loadImage(mm_mapnames_dir + "/41.png");
+var map_42 = Vision.loadImage(mm_mapnames_dir + "/42.png");
+var map_43 = Vision.loadImage(mm_mapnames_dir + "/43.png");
+var map_44 = Vision.loadImage(mm_mapnames_dir + "/44.png");
+var map_45 = Vision.loadImage(mm_mapnames_dir + "/45.png");
+var map_51 = Vision.loadImage(mm_mapnames_dir + "/51.png");
+var map_52 = Vision.loadImage(mm_mapnames_dir + "/52.png");
+var map_53 = Vision.loadImage(mm_mapnames_dir + "/53.png");
+
+var mapname_tpls = [
+	map_11, map_12, map_13, map_14, map_15, map_16, map_17, map_18,
+	map_21, map_22, map_23, map_24, map_25, map_26, map_27, map_28,
+	map_31, map_32, map_33, map_34, map_35, map_36, map_37, map_38,
+	map_41, map_42, map_43, map_44, map_45, map_51, map_52, map_53,
+];
 
 /* Geometry (Replace them with botfather types, once they are available) */
 
@@ -69,15 +112,15 @@ Rect.prototype.getHeight = function() {
 /* Ingame Minimap */
 
 var OUTER_MINIMAP_SIZES = [
-	{ height: 228, width: 180 },
-	{ height: 247, width: 192 },
-	{ height: 270, width: 207 },
-	{ height: 300, width: 225 },
-	{ height: 337, width: 248 },
-	{ height: 387, width: 279 },
-	{ height: 457, width: 323 },
-	{ height: 562, width: 389 },
-	{ height: 737, width: 498 }
+	{ width: 228, height: 180 },
+	{ width: 247, height: 192 },
+	{ width: 270, height: 207 },
+	{ width: 300, height: 225 },
+	{ width: 337, height: 248 },
+	{ width: 387, height: 279 },
+	{ width: 457, height: 323 },
+	{ width: 562, height: 389 },
+	{ width: 737, height: 498 }
 ];
 
 var INNER_MINIMAP_SIZES = [
@@ -99,6 +142,17 @@ var OUTER_TO_INNER_OFFSET = {
 
 var VELOCITY_MARGIN = { x: 120, y: 26 };
 var VELOCITY_SIZE = { width: 62, height: 21 };
+
+var MAPNAME_WIDTH = 51;
+var MAPNAME_HEIGHT = 26;
+var MAPNAME_MARGIN_TOP = 23;
+
+var MAPNAME_MAPPING = [
+	'1-1', '1-2', '1-3', '1-4', '1-5', '1-6', '1-7', '1-8',
+	'2-1', '2-2', '2-3', '2-4', '2-5', '2-6', '2-7', '2-8',
+	'3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8',
+	'4-1', '4-2', '4-3', '4-4', '4-5', '5-1', '5-2', '5-3',
+];
 
 var Minimap = function() {
 	this.cached_level = -1;
@@ -160,18 +214,54 @@ Minimap.prototype.getInnerRect = function(ignore_cache) {
 	);
 }
 
-Minimap.prototype.getVelocityImage = function() {
+Minimap.prototype.getMinimapImage = function() {
 	var screenshot = Browser.takeScreenshot();
 	var position = this.getPosition();
+	var outer_mm = this.getOuterRect();
 
-	var velocity_image = Vision.cropImage(
+	return Vision.cropImage(
 		screenshot,
-		position.getX() + VELOCITY_MARGIN.x,
-		position.getY() + VELOCITY_MARGIN.y,
+		position.getX(),
+		position.getY(),
+		outer_mm.getWidth(),
+		outer_mm.getHeight()
+	);
+}
+
+Minimap.prototype.getVelocityImage = function() {
+	return Vision.cropImage(
+		this.getMinimapImage(),
+		VELOCITY_MARGIN.x,
+		VELOCITY_MARGIN.y,
 		VELOCITY_SIZE.width,
 		VELOCITY_SIZE.height
 	);
-	return velocity_image;
+}
+
+Minimap.prototype.getMapnameImage = function() {
+	return Vision.cropImage(
+		this.getMinimapImage(),
+		0,
+		MAPNAME_MARGIN_TOP,
+		MAPNAME_WIDTH,
+		MAPNAME_HEIGHT
+	);
+}
+
+Minimap.prototype.getMapname = function() {
+	var mapname_image = this.getMapnameImage();
+	var min_hsv = new HSVColor(0, 0, 94);
+	var max_hsv = new HSVColor(255, 15, 100);
+	var monochrome_mn = Vision.isolateColor(mapname_image, min_hsv, max_hsv);
+
+	for (var i = 0; i < mapname_tpls.length; i++) {
+		var mapname_tpl = mapname_tpls[i];
+		var match = Vision.findMatch(monochrome_mn, mapname_tpl, 0.99);
+		
+		if (match.found()) {
+			return MAPNAME_MAPPING[i];
+		}
+	}
 }
 
 /* Navigation */
