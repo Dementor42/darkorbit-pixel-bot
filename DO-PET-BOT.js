@@ -1,7 +1,13 @@
 /* Configuration */
 
 var CONFIG_USE_GLOBAL_NAV = true;
-var CONFIG_MAP = "1-1";
+var CONFIG_MAP = "4-1";
+
+var CONFIG_AUTO_RECONNECT = true;
+
+var CONFIG_AUTO_SHIP_REPAIR = true;
+var CONFIG_AUTO_SHIP_REPAIR_LOCATION = "base"; // Possible locations: "stage", "gate", "base"
+var CONFIG_MAX_SHIP_REPAIRS = 20; // The script will stop once they have been reached.
 
 /* Templates and Data */
 
@@ -509,7 +515,11 @@ Navigator.prototype.travelTo = function(dest_coords) {
 /* Client */
 
 var Client = function() {
-	this.deaths = 0;
+	this.revives_done = 0;
+}
+
+Client.prototype.numRevivesDone = function() {
+	return this.revives_done;
 }
 
 Client.prototype.isDestroyed = function() {
@@ -556,7 +566,7 @@ Client.prototype.revive = function(location) {
 
 	Helper.log("Ship repair confirmed.");
 
-	this.deaths++;
+	this.revives_done++;
 	return true;
 }
 
@@ -595,10 +605,6 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 /* Main Algorithm */
 
 function main() {
-	var client = new Client();
-	Helper.log("Is disconnected?", client.isDisconnected());
-	client.reconnect();
-	return;
 
 	// Ensure the user is logged in and in the map
 	var current_url = Browser.getUrl();
@@ -607,6 +613,9 @@ function main() {
 		Helper.log("The auto login feature is still missing in this bot script, sorry");
 		return;
 	}
+
+	// Keep track of whether we checked that we're still on the correct map after our ship has been destroyed.
+	var map_checked_after_death = false;
 
 	// Find and measure the minimap
 	var minimap = new Minimap();
@@ -629,25 +638,63 @@ function main() {
 	var nav = new Navigator(minimap);
 	Helper.log("Ready to bot. Don't forget to activate your PET with looter gear!");
 
-	// Make sure the bot is on the configured map
-	if (CONFIG_USE_GLOBAL_NAV) {
-		nav.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
-	}
+	// Setup the client
+	var client = new Client();
 
 	// The main loop playing the game until the user stops the script
 	while (true) {
 
-		// Navigate
-		var dest = nav.getNextDestination();
-		Helper.log("Flying to: ", dest.getX(), dest.getY());
-		Browser.leftClick(dest);
+		// TODO: Don't check lost connection and ship destruction to often.
 
-		do{
+		// Reconnect, if disconnected and auto-reconnect is enabled
+		if (client.isDisconnected()) {
+			Helper.log("Client disconnected.");
+
+			if (!CONFIG_AUTO_RECONNECT) {
+				Helper.log("Auto-reconnect disabled. Stopping the script...");
+				return;
+			}
+
+			Helper.log("Trying to reconnect...");
+			client.reconnect();
+		}
+
+		// Repair the ship, if destroyed and auto repair is enabled
+		if (client.isDestroyed()) {
+			Helper.log("Ship destroyed.");
+
+			if (!CONFIG_AUTO_SHIP_REPAIR) {
+				Helper.log("Auto-ship-repair disabled. Stopping the script...");
+				return;
+			}
+
+			if (client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
+				Helper.log("Max configured ship repairs reached. Stopping...");
+				return;
+			}
+
+			Helper.log("Trying to repair the ship...");
+			client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
+
+			Helper.sleep(2);
+			map_checked_after_death = false;
+		}
+
+		// Make sure the bot is on the configured map
+		if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
+			nav.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
+			map_checked_after_death = true;
+		}
+
+		// Local navigation
+		if (nav.shipIsMoving()) {
 			// Wait for the ship to reach it's destination.
 			// While doing so the pet can collect bonus boxes.
 			Helper.sleep(2);
+		} else {
+			Helper.log("Flying to a random location on the current map...");
+			Browser.leftClick(nav.getNextDestination());
 		}
-		while (nav.shipIsMoving());
 	}
 }
 
