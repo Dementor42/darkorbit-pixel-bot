@@ -19,6 +19,9 @@ var repair_on_base_tpl = new Image(client_tpl_dir + "repair_on_base_option.png")
 var repair_on_gate_tpl = new Image(client_tpl_dir + "repair_on_gate_option.png");
 var repair_on_stage_tpl = new Image(client_tpl_dir + "repair_on_stage_option.png");
 
+var disconnected_tpl = new Image(client_tpl_dir + "disconnected.png");
+var reconnecting_tpl = new Image(client_tpl_dir + "reconnecting.png");
+
 var mm_level_1_tpl = new Image(mm_level_dir + "1_tpl.png");
 var mm_level_2_tpl = new Image(mm_level_dir + "2_tpl.png");
 var mm_level_3_tpl = new Image(mm_level_dir + "3_tpl.png");
@@ -557,11 +560,44 @@ Client.prototype.revive = function(location) {
 	return true;
 }
 
+Client.prototype.isDisconnected = function(pretaken_screenshot) {
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	return Vision.findMatch(screenshot, disconnected_tpl, 0.95).isValid();
+}
+
+Client.prototype.reconnect = function(pretaken_screenshot) {
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	var disconnected_match = Vision.findMatch(screenshot, disconnected_tpl, 0.95);
+
+	if (!disconnected_match.isValid()) {
+		// The client seems to be not disconnected.
+		return false;
+	}
+
+	// TODO: report that botfathers Point.pointAdded method doesnt work?!
+
+	var tpl_bl = disconnected_match.getRect().getBottomLeft();
+	var new_connection_btn = new Point(tpl_bl.getX() + 10, tpl_bl.getY() + 10); // Add tpl to button offset manuelly -.-
+
+	Browser.leftClick(new_connection_btn);
+	Helper.log("Reconnect button clicked.");
+
+	do {
+		Helper.log("Reconnecting...");
+		Helper.sleep(1);
+	}
+	while (Vision.findMatch(Browser.takeScreenshot(), reconnecting_tpl, 0.95).isValid());
+
+	Helper.log("Reconnected.");
+	return true;
+}
+
 /* Main Algorithm */
 
 function main() {
 	var client = new Client();
-	client.revive("gate");
+	Helper.log("Is disconnected?", client.isDisconnected());
+	client.reconnect();
 	return;
 
 	// Ensure the user is logged in and in the map
