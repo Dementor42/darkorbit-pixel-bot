@@ -13,13 +13,13 @@ Feel free to check this code out to learn how their software work. Cheers
 - [x] Let the ship reach it's destination before choosing a new destinaton
 - [ ] Automatically open required ingame windows
 - [ ] Automatically login
-- [ ] Automatically reconnect (when connection lost)
+- [x] Automatically reconnect (when connection lost)
 - [ ] Automatically start and repair PET
 - [ ] Let the ship collect bonus boxes
 - [ ] Let the ship collect pirate booty
 - [ ] Automatically cloak the ship
-- [ ] Automatically repair the ship
-- [ ] Fly back to defined map after death
+- [x] Automatically repair the ship
+- [x] Fly back to defined map after death
 - [ ] Circle maps
 - [ ] Escape on low HP/Shield
 - [ ] Hunt NPCs on x-2
