@@ -1,17 +1,23 @@
 /* Configuration */
 
-var CONFIG_USE_GLOBAL_NAV = false;
-var CONFIG_MAP = "1-2";
+var CONFIG_USE_GLOBAL_NAV = true;
+var CONFIG_MAP = "1-1";
 
 /* Templates and Data */
 
 var template_dir = "templates/";
+var client_tpl_dir = template_dir + "client/";
 var minimap_dir = template_dir + "minimap/";
 var mm_level_dir = minimap_dir + "levels/";
 var mm_mapnames_dir = minimap_dir + "mapnames/";
 
 var jump_button_tpl = new Image(template_dir + "jump_button.png");
 var no_velocity_ref = new Image(new Size(62, 21), new Color("black"));
+
+var repair_confirm_tpl = new Image(client_tpl_dir + "confirm_repair_button_edge.png");
+var repair_on_base_tpl = new Image(client_tpl_dir + "repair_on_base_option.png");
+var repair_on_gate_tpl = new Image(client_tpl_dir + "repair_on_gate_option.png");
+var repair_on_stage_tpl = new Image(client_tpl_dir + "repair_on_stage_option.png");
 
 var mm_level_1_tpl = new Image(mm_level_dir + "1_tpl.png");
 var mm_level_2_tpl = new Image(mm_level_dir + "2_tpl.png");
@@ -497,9 +503,66 @@ Navigator.prototype.travelTo = function(dest_coords) {
 	return true;
 }
 
+/* Client */
+
+var Client = function() {
+	this.deaths = 0;
+}
+
+Client.prototype.isDestroyed = function() {
+	var screenshot = Browser.takeScreenshot();
+	return Vision.findMatch(screenshot, repair_on_base_tpl, 0.95).isValid();
+}
+
+Client.prototype.revive = function(location) {
+	var screenshot = Browser.takeScreenshot();
+	var option_match = new Match();
+
+	switch (location) {
+		case "stage":
+			option_match = Vision.findMatch(screenshot, repair_on_stage_tpl, 0.95);
+			break;
+		case "gate":
+			option_match = Vision.findMatch(screenshot, repair_on_gate_tpl, 0.95);
+			break;
+		case "base":
+			option_match = Vision.findMatch(screenshot, repair_on_base_tpl, 0.95);
+			break;
+	}
+
+	if (option_match.isValid()) {
+		Browser.leftClick(option_match.getRect().getCenter());
+		Helper.sleep(1);
+		Helper.log("Selected ship repair location...");
+	}
+
+	else {
+		Helper.log("Couldn't select the desired ship repair location.");
+		// This either means the ship is not destroyed or there is only the "base" location available.
+	}
+
+	var button_match = Vision.findMatch(screenshot, repair_confirm_tpl, 0.95);
+	if (!button_match.isValid())
+	{
+		Helper.log("Unable to find the ship repair confirm button.");
+		return false;
+	}
+
+	Browser.leftClick(button_match.getRect().getCenter());
+	Helper.sleep(1);
+
+	Helper.log("Ship repair confirmed.");
+
+	this.deaths++;
+	return true;
+}
+
 /* Main Algorithm */
 
 function main() {
+	var client = new Client();
+	client.revive("gate");
+	return;
 
 	// Ensure the user is logged in and in the map
 	var current_url = Browser.getUrl();
