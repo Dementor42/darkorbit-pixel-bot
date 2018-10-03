@@ -1,13 +1,17 @@
 /* Configuration */
 
-var CONFIG_USE_GLOBAL_NAV = true;
-var CONFIG_MAP = "4-1";
+var CONFIG_USE_AUTO_LOGIN = false;
+var CONFIG_AUTO_LOGIN_USERNAME = "";
+var CONFIG_AUTO_LOGIN_PASSWORD = "";
 
 var CONFIG_AUTO_RECONNECT = true;
 
 var CONFIG_AUTO_SHIP_REPAIR = true;
 var CONFIG_AUTO_SHIP_REPAIR_LOCATION = "base"; // Possible locations: "stage", "gate", "base"
 var CONFIG_MAX_SHIP_REPAIRS = 20; // The script will stop once they have been reached.
+
+var CONFIG_USE_GLOBAL_NAV = true;
+var CONFIG_MAP = "4-1";
 
 /* Templates and Data */
 
@@ -19,6 +23,9 @@ var mm_mapnames_dir = minimap_dir + "mapnames/";
 
 var jump_button_tpl = new Image(template_dir + "jump_button.png");
 var no_velocity_ref = new Image(new Size(62, 21), new Color("black"));
+
+var logout_button_tpl = new Image(template_dir + "logout_button.png");
+var start_button_tpl = new Image(client_tpl_dir + "start_button.png");
 
 var repair_confirm_tpl = new Image(client_tpl_dir + "confirm_repair_button_edge.png");
 var repair_on_base_tpl = new Image(client_tpl_dir + "repair_on_base_option.png");
@@ -602,19 +609,80 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 	return true;
 }
 
+Client.prototype.isIngame = function() {
+	if (Browser.getUrl().getQuery().indexOf("internalMapRevolution") === -1) {
+		return false;
+	}
+
+	var screenshot = Browser.takeScreenshot();
+	var logout_button_match = Vision.findMatch(Browser.takeScreenshot(), logout_button_tpl, 0.99);
+
+	return logout_button_match.isValid() || this.isDisconnected() || this.isDestroyed();
+}
+
+Client.prototype.autoLogin = function(username, password) {
+	Helper.log("Loading game website...");
+	
+	Browser.loadUrl("http://darkorbit.com/?lang=en");
+	Browser.finishLoading();
+
+	Helper.log("Entering account credentials...");
+
+	var fill_uname_js = "document.getElementById('bgcdw_login_form_username').value = '" + username + "';";
+	Browser.executeJavascript(fill_uname_js);
+	Helper.sleep(1);
+	
+	var fill_pword_js = "document.getElementById('bgcdw_login_form_password').value = '" + password + "';";
+	Browser.executeJavascript(fill_pword_js);
+	Helper.sleep(1);
+	
+	var formsubmit_js = "document.bgcdw_login_form.submit();";
+	Browser.executeJavascript(formsubmit_js);
+
+	Helper.log("Form submitted.");
+	Helper.sleep(2);
+
+	Browser.finishLoading();
+	var ingame_url = Browser.getUrl().getHost() + "/indexInternal.es?action=internalMapRevolution";
+
+	Browser.loadUrl(ingame_url);
+	Browser.finishLoading();
+
+	while (!this.isIngame()) {
+		Helper.log("Waiting for the game to load...")
+
+		var screenshot = Browser.takeScreenshot();
+		var start_button_match = Vision.findMatch(screenshot, start_button_tpl, 0.97);
+		
+		if (start_button_match.isValid()) {
+			Browser.leftClick(start_button_match.getRect().getCenter());
+			Helper.log("Game start button clicked.");
+		}
+
+		Helper.sleep(3);
+	}
+}
+
 /* Main Algorithm */
 
 function main() {
 
-	// Ensure the user is logged in and in the map
-	var current_url = Browser.getUrl();
-	if (current_url.getQuery().indexOf("internalMapRevolution") === -1) {
-		Helper.log("### ! ! ! Please login manually and start the game. ! ! ! ###");
-		Helper.log("The auto login feature is still missing in this bot script, sorry");
-		return;
+	// Setup the client
+	var client = new Client();
+
+	if (!client.isIngame()) {
+		if (CONFIG_USE_AUTO_LOGIN) {
+			Helper.log("Logging in automatically");
+			client.autoLogin(CONFIG_AUTO_LOGIN_USERNAME, CONFIG_AUTO_LOGIN_PASSWORD);
+			Helper.log("Logged in automatically.");
+		} else {
+			Helper.log("### ! ! ! Please login manually and start the game or configure the auto login feature ! ! ! ###");
+			return;
+		}
 	}
 
 	// Keep track of whether we checked that we're still on the correct map after our ship has been destroyed.
+	// Initialy false to force a check when the script has been started.
 	var map_checked_after_death = false;
 
 	// Find and measure the minimap
@@ -637,9 +705,6 @@ function main() {
 	// Configure the navigator
 	var nav = new Navigator(minimap);
 	Helper.log("Ready to bot. Don't forget to activate your PET with looter gear!");
-
-	// Setup the client
-	var client = new Client();
 
 	// The main loop playing the game until the user stops the script
 	while (true) {
