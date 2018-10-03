@@ -15,86 +15,86 @@ var CONFIG_MAP = "4-1";
 
 /* Templates and Data */
 
-var template_dir = "templates/";
-var client_tpl_dir = template_dir + "client/";
-var minimap_dir = template_dir + "minimap/";
-var mm_level_dir = minimap_dir + "levels/";
-var mm_mapnames_dir = minimap_dir + "mapnames/";
+var TEMPLATE_DIR = "templates/";
+var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
+var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
+var MM_LEVEL_DIR = MINIMAP_DIR + "levels/";
+var MM_MAPNAMES_DIR = MINIMAP_DIR + "mapnames/";
 
-var jump_button_tpl = new Image(template_dir + "jump_button.png");
-var no_velocity_ref = new Image(new Size(62, 21), new Color("black"));
+var JUMP_BUTTON_TPL = new Image(TEMPLATE_DIR + "jump_button.png");
+var NO_VELOCITY_REF = new Image(new Size(62, 21), new Color("black"));
 
-var logout_button_tpl = new Image(template_dir + "logout_button.png");
-var start_button_tpl = new Image(client_tpl_dir + "start_button.png");
+var LOGOUT_BUTTON_TPL = new Image(TEMPLATE_DIR + "logout_button.png");
+var START_BUTTON_TPL = new Image(CLIENT_TPL_DIR + "start_button.png");
 
-var repair_confirm_tpl = new Image(client_tpl_dir + "confirm_repair_button_edge.png");
-var repair_on_base_tpl = new Image(client_tpl_dir + "repair_on_base_option.png");
-var repair_on_gate_tpl = new Image(client_tpl_dir + "repair_on_gate_option.png");
-var repair_on_stage_tpl = new Image(client_tpl_dir + "repair_on_stage_option.png");
+var REPAIR_CONFIRM_TPL = new Image(CLIENT_TPL_DIR + "confirm_repair_button_edge.png");
+var REPAIR_ON_BASE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_base_option.png");
+var REPAIR_ON_GATE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_gate_option.png");
+var REPAIR_ON_STAGE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_stage_option.png");
 
-var disconnected_tpl = new Image(client_tpl_dir + "disconnected.png");
-var reconnecting_tpl = new Image(client_tpl_dir + "reconnecting.png");
+var DISCONNECTED_TPL = new Image(CLIENT_TPL_DIR + "disconnected.png");
+var RECONNECTING_TPL = new Image(CLIENT_TPL_DIR + "reconnecting.png");
 
-var mm_level_1_tpl = new Image(mm_level_dir + "1_tpl.png");
-var mm_level_2_tpl = new Image(mm_level_dir + "2_tpl.png");
-var mm_level_3_tpl = new Image(mm_level_dir + "3_tpl.png");
-var mm_level_4_tpl = new Image(mm_level_dir + "4_tpl.png");
-var mm_level_5_tpl = new Image(mm_level_dir + "5_tpl.png");
-var mm_level_6_tpl = new Image(mm_level_dir + "6_tpl.png");
-var mm_level_7_tpl = new Image(mm_level_dir + "7_tpl.png");
-var mm_level_8_tpl = new Image(mm_level_dir + "8_tpl.png");
-var mm_level_9_tpl = new Image(mm_level_dir + "9_tpl.png");
+var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
+var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
+var MM_LEVEL_3_TPL = new Image(MM_LEVEL_DIR + "3_tpl.png");
+var MM_LEVEL_4_TPL = new Image(MM_LEVEL_DIR + "4_tpl.png");
+var MM_LEVEL_5_TPL = new Image(MM_LEVEL_DIR + "5_tpl.png");
+var MM_LEVEL_6_TPL = new Image(MM_LEVEL_DIR + "6_tpl.png");
+var MM_LEVEL_7_TPL = new Image(MM_LEVEL_DIR + "7_tpl.png");
+var MM_LEVEL_8_TPL = new Image(MM_LEVEL_DIR + "8_tpl.png");
+var MM_LEVEL_9_TPL = new Image(MM_LEVEL_DIR + "9_tpl.png");
 
-var mm_level_tpls = [
-	mm_level_1_tpl, mm_level_2_tpl, mm_level_3_tpl,
-	mm_level_4_tpl, mm_level_5_tpl, mm_level_6_tpl,
-	mm_level_7_tpl, mm_level_8_tpl, mm_level_9_tpl,
+var MM_LEVEL_TPLS = [
+	MM_LEVEL_1_TPL, MM_LEVEL_2_TPL, MM_LEVEL_3_TPL,
+	MM_LEVEL_4_TPL, MM_LEVEL_5_TPL, MM_LEVEL_6_TPL,
+	MM_LEVEL_7_TPL, MM_LEVEL_8_TPL, MM_LEVEL_9_TPL,
 ];
 
-var map_11 = new Image(mm_mapnames_dir + "11.png");
-var map_12 = new Image(mm_mapnames_dir + "12.png");
-var map_13 = new Image(mm_mapnames_dir + "13.png");
-var map_14 = new Image(mm_mapnames_dir + "14.png");
-var map_15 = new Image(mm_mapnames_dir + "15.png");
-var map_16 = new Image(mm_mapnames_dir + "16.png");
-var map_17 = new Image(mm_mapnames_dir + "17.png");
-var map_18 = new Image(mm_mapnames_dir + "18.png");
-var map_21 = new Image(mm_mapnames_dir + "21.png");
-var map_22 = new Image(mm_mapnames_dir + "22.png");
-var map_23 = new Image(mm_mapnames_dir + "23.png");
-var map_24 = new Image(mm_mapnames_dir + "24.png");
-var map_25 = new Image(mm_mapnames_dir + "25.png");
-var map_26 = new Image(mm_mapnames_dir + "26.png");
-var map_27 = new Image(mm_mapnames_dir + "27.png");
-var map_28 = new Image(mm_mapnames_dir + "28.png");
-var map_31 = new Image(mm_mapnames_dir + "31.png");
-var map_32 = new Image(mm_mapnames_dir + "32.png");
-var map_33 = new Image(mm_mapnames_dir + "33.png");
-var map_34 = new Image(mm_mapnames_dir + "34.png");
-var map_35 = new Image(mm_mapnames_dir + "35.png");
-var map_36 = new Image(mm_mapnames_dir + "36.png");
-var map_37 = new Image(mm_mapnames_dir + "37.png");
-var map_38 = new Image(mm_mapnames_dir + "38.png");
-var map_41 = new Image(mm_mapnames_dir + "41.png");
-var map_42 = new Image(mm_mapnames_dir + "42.png");
-var map_43 = new Image(mm_mapnames_dir + "43.png");
-var map_44 = new Image(mm_mapnames_dir + "44.png");
-var map_45 = new Image(mm_mapnames_dir + "45.png");
-var map_51 = new Image(mm_mapnames_dir + "51.png");
-var map_52 = new Image(mm_mapnames_dir + "52.png");
-var map_53 = new Image(mm_mapnames_dir + "53.png");
+var MAP_11 = new Image(MM_MAPNAMES_DIR + "11.png");
+var MAP_12 = new Image(MM_MAPNAMES_DIR + "12.png");
+var MAP_13 = new Image(MM_MAPNAMES_DIR + "13.png");
+var MAP_14 = new Image(MM_MAPNAMES_DIR + "14.png");
+var MAP_15 = new Image(MM_MAPNAMES_DIR + "15.png");
+var MAP_16 = new Image(MM_MAPNAMES_DIR + "16.png");
+var MAP_17 = new Image(MM_MAPNAMES_DIR + "17.png");
+var MAP_18 = new Image(MM_MAPNAMES_DIR + "18.png");
+var MAP_21 = new Image(MM_MAPNAMES_DIR + "21.png");
+var MAP_22 = new Image(MM_MAPNAMES_DIR + "22.png");
+var MAP_23 = new Image(MM_MAPNAMES_DIR + "23.png");
+var MAP_24 = new Image(MM_MAPNAMES_DIR + "24.png");
+var MAP_25 = new Image(MM_MAPNAMES_DIR + "25.png");
+var MAP_26 = new Image(MM_MAPNAMES_DIR + "26.png");
+var MAP_27 = new Image(MM_MAPNAMES_DIR + "27.png");
+var MAP_28 = new Image(MM_MAPNAMES_DIR + "28.png");
+var MAP_31 = new Image(MM_MAPNAMES_DIR + "31.png");
+var MAP_32 = new Image(MM_MAPNAMES_DIR + "32.png");
+var MAP_33 = new Image(MM_MAPNAMES_DIR + "33.png");
+var MAP_34 = new Image(MM_MAPNAMES_DIR + "34.png");
+var MAP_35 = new Image(MM_MAPNAMES_DIR + "35.png");
+var MAP_36 = new Image(MM_MAPNAMES_DIR + "36.png");
+var MAP_37 = new Image(MM_MAPNAMES_DIR + "37.png");
+var MAP_38 = new Image(MM_MAPNAMES_DIR + "38.png");
+var MAP_41 = new Image(MM_MAPNAMES_DIR + "41.png");
+var MAP_42 = new Image(MM_MAPNAMES_DIR + "42.png");
+var MAP_43 = new Image(MM_MAPNAMES_DIR + "43.png");
+var MAP_44 = new Image(MM_MAPNAMES_DIR + "44.png");
+var MAP_45 = new Image(MM_MAPNAMES_DIR + "45.png");
+var MAP_51 = new Image(MM_MAPNAMES_DIR + "51.png");
+var MAP_52 = new Image(MM_MAPNAMES_DIR + "52.png");
+var MAP_53 = new Image(MM_MAPNAMES_DIR + "53.png");
 
-var mapname_tpls = [
-	map_11, map_12, map_13, map_14, map_15, map_16, map_17, map_18,
-	map_21, map_22, map_23, map_24, map_25, map_26, map_27, map_28,
-	map_31, map_32, map_33, map_34, map_35, map_36, map_37, map_38,
-	map_41, map_42, map_43, map_44, map_45, map_51, map_52, map_53,
+var MAPNAME_TPLS = [
+	MAP_11, MAP_12, MAP_13, MAP_14, MAP_15, MAP_16, MAP_17, MAP_18,
+	MAP_21, MAP_22, MAP_23, MAP_24, MAP_25, MAP_26, MAP_27, MAP_28,
+	MAP_31, MAP_32, MAP_33, MAP_34, MAP_35, MAP_36, MAP_37, MAP_38,
+	MAP_41, MAP_42, MAP_43, MAP_44, MAP_45, MAP_51, MAP_52, MAP_53,
 ];
 
 // We use different mapnames to represent the space map as a javascript object.
 // Instead of '4-1' we write '__4_1'.
 
-var INTERN_MAPNAME_MAPPING = [ // Which mapname template in mapname_tpls corresponds to which mapname.
+var INTERN_MAPNAME_MAPPING = [ // Which mapname template in MAPNAME_TPLS corresponds to which mapname.
 	'__1_1', '__1_2', '__1_3', '__1_4', '__1_5', '__1_6', '__1_7', '__1_8',
 	'__2_1', '__2_2', '__2_3', '__2_4', '__2_5', '__2_6', '__2_7', '__2_8',
 	'__3_1', '__3_2', '__3_3', '__3_4', '__3_5', '__3_6', '__3_7', '__3_8',
@@ -268,8 +268,8 @@ var Minimap = function() {
 };
 
 Minimap.prototype.calculateTelemetry = function(screenshot) {
-	for (var i = mm_level_tpls.length - 1; i >= 0; i--) {
-		var match = Vision.findMatch(screenshot, mm_level_tpls[i], 0.98);
+	for (var i = MM_LEVEL_TPLS.length - 1; i >= 0; i--) {
+		var match = Vision.findMatch(screenshot, MM_LEVEL_TPLS[i], 0.98);
 
 		//Helper.log(match);
 
@@ -370,8 +370,8 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 	var max_hsv = new Color(200, 15, 255, "hsv");
 	var monochrome_mn = mapname_image.isolateColorRange(min_hsv, max_hsv);
 
-	for (var i = 0; i < mapname_tpls.length; i++) {
-		var mapname_tpl = mapname_tpls[i];
+	for (var i = 0; i < MAPNAME_TPLS.length; i++) {
+		var mapname_tpl = MAPNAME_TPLS[i];
 		var match = Vision.findMatch(monochrome_mn, mapname_tpl, 0.95);
 		
 		//Helper.log(match);
@@ -417,7 +417,7 @@ Navigator.prototype.shipIsMoving = function() {
 
 	var blacked_bg = velocity_image.isolateColorRange(min_hsv, max_hsv);
 
-	var pixel_equality = blacked_bg.pixelEquality(no_velocity_ref);
+	var pixel_equality = blacked_bg.pixelEquality(NO_VELOCITY_REF);
 	return pixel_equality < 0.97;
 }
 
@@ -489,7 +489,7 @@ Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 	Helper.log("Trying to find and click the jump button.");
 
 	var screenshot = Browser.takeScreenshot();
-	var jump_button_match = Vision.findMatch(screenshot, jump_button_tpl, 0.92);
+	var jump_button_match = Vision.findMatch(screenshot, JUMP_BUTTON_TPL, 0.92);
 
 	if (!jump_button_match.isValid()) {
 		Helper.log("Clicking the jump button failed.")
@@ -531,7 +531,7 @@ Client.prototype.numRevivesDone = function() {
 
 Client.prototype.isDestroyed = function() {
 	var screenshot = Browser.takeScreenshot();
-	return Vision.findMatch(screenshot, repair_on_base_tpl, 0.95).isValid();
+	return Vision.findMatch(screenshot, REPAIR_ON_BASE_TPL, 0.95).isValid();
 }
 
 Client.prototype.revive = function(location) {
@@ -540,13 +540,13 @@ Client.prototype.revive = function(location) {
 
 	switch (location) {
 		case "stage":
-			option_match = Vision.findMatch(screenshot, repair_on_stage_tpl, 0.95);
+			option_match = Vision.findMatch(screenshot, REPAIR_ON_STAGE_TPL, 0.95);
 			break;
 		case "gate":
-			option_match = Vision.findMatch(screenshot, repair_on_gate_tpl, 0.95);
+			option_match = Vision.findMatch(screenshot, REPAIR_ON_GATE_TPL, 0.95);
 			break;
 		case "base":
-			option_match = Vision.findMatch(screenshot, repair_on_base_tpl, 0.95);
+			option_match = Vision.findMatch(screenshot, REPAIR_ON_BASE_TPL, 0.95);
 			break;
 	}
 
@@ -561,7 +561,7 @@ Client.prototype.revive = function(location) {
 		// This either means the ship is not destroyed or there is only the "base" location available.
 	}
 
-	var button_match = Vision.findMatch(screenshot, repair_confirm_tpl, 0.95);
+	var button_match = Vision.findMatch(screenshot, REPAIR_CONFIRM_TPL, 0.95);
 	if (!button_match.isValid())
 	{
 		Helper.log("Unable to find the ship repair confirm button.");
@@ -579,12 +579,12 @@ Client.prototype.revive = function(location) {
 
 Client.prototype.isDisconnected = function(pretaken_screenshot) {
 	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
-	return Vision.findMatch(screenshot, disconnected_tpl, 0.95).isValid();
+	return Vision.findMatch(screenshot, DISCONNECTED_TPL, 0.95).isValid();
 }
 
 Client.prototype.reconnect = function(pretaken_screenshot) {
 	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
-	var disconnected_match = Vision.findMatch(screenshot, disconnected_tpl, 0.95);
+	var disconnected_match = Vision.findMatch(screenshot, DISCONNECTED_TPL, 0.95);
 
 	if (!disconnected_match.isValid()) {
 		// The client seems to be not disconnected.
@@ -603,7 +603,7 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 		Helper.log("Reconnecting...");
 		Helper.sleep(1);
 	}
-	while (Vision.findMatch(Browser.takeScreenshot(), reconnecting_tpl, 0.95).isValid());
+	while (Vision.findMatch(Browser.takeScreenshot(), RECONNECTING_TPL, 0.95).isValid());
 
 	Helper.log("Reconnected.");
 	return true;
@@ -615,7 +615,7 @@ Client.prototype.isIngame = function() {
 	}
 
 	var screenshot = Browser.takeScreenshot();
-	var logout_button_match = Vision.findMatch(Browser.takeScreenshot(), logout_button_tpl, 0.99);
+	var logout_button_match = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
 
 	return logout_button_match.isValid() || this.isDisconnected() || this.isDestroyed();
 }
@@ -652,7 +652,7 @@ Client.prototype.autoLogin = function(username, password) {
 		Helper.log("Waiting for the game to load...")
 
 		var screenshot = Browser.takeScreenshot();
-		var start_button_match = Vision.findMatch(screenshot, start_button_tpl, 0.97);
+		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.97);
 		
 		if (start_button_match.isValid()) {
 			Browser.leftClick(start_button_match.getRect().getCenter());
