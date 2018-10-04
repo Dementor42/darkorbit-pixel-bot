@@ -18,6 +18,7 @@ var CONFIG_MAP = "4-1";
 var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
 var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
+var PET_TPL_DIR = TEMPLATE_DIR + "pet/";
 var MM_LEVEL_DIR = MINIMAP_DIR + "levels/";
 var MM_MAPNAMES_DIR = MINIMAP_DIR + "mapnames/";
 
@@ -34,6 +35,25 @@ var REPAIR_ON_STAGE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_stage_option.png
 
 var DISCONNECTED_TPL = new Image(CLIENT_TPL_DIR + "disconnected.png");
 var RECONNECTING_TPL = new Image(CLIENT_TPL_DIR + "reconnecting.png");
+
+var PET_REPAIR_BTN_TPL = new Image(PET_TPL_DIR + "repair_button.png");
+var PET_PLAY_BTN_TPL = new Image(PET_TPL_DIR + "play_button.png");
+var PET_STOP_BTN_TPL = new Image(PET_TPL_DIR + "stop_button.png");
+var GENERIC_PET_BTN_TPL = new Image(PET_TPL_DIR + "generic_button.png");
+var GEAR_DROPDOWN_BTN_TPL = new Image(PET_TPL_DIR + "gear_dropdown_button.png");
+
+var AUTOLOOTER_TPL = new Image(PET_TPL_DIR + "autolooter.png");
+var PASSIVEMODE_TPL = new Image(PET_TPL_DIR + "passivemode.png");
+var GUARDMODE_TPL = new Image(PET_TPL_DIR + "guardmode.png");
+var COLLECTOR_TPL = new Image(PET_TPL_DIR + "collector.png");
+
+var AUTOLOOTER_ENTRY_TPL = new Image(PET_TPL_DIR + "autolooter_entry.png");
+var PASSIVEMODE_ENTRY_TPL = new Image(PET_TPL_DIR + "passivemode_entry.png");
+var GUARDMODE_ENTRY_TPL = new Image(PET_TPL_DIR + "guardmode_entry.png");
+var COLLECTOR_ENTRY_TPL = new Image(PET_TPL_DIR + "collector_entry.png");
+
+var PET_WINDOW_CORNER_TPL = new Image(PET_TPL_DIR + "window_corner.png");
+var PET_WINDOW_SIZE = new Size(272, 320); // Including the gear dropdown menu with max gears
 
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
@@ -257,6 +277,11 @@ function convertExternToInternMapname(extern_mapname) {
 		debug(extern_mapname, "is not an extern mapname");
 	}
 	return "__" + extern_mapname.replace("-", "_");
+}
+
+function moveMouseToCenter() {
+	// This methods helps prevents unwished popups of ingame objects.
+	Browser.moveMouseTo(Browser.getRect().getCenter());
 }
 
 /* Ingame Minimap */
@@ -661,6 +686,176 @@ Client.prototype.autoLogin = function(username, password) {
 
 		Helper.sleep(3);
 	}
+}
+
+/* PET */
+
+var PET = function() {
+	this.cached_window_position = undefined;
+	this.revives_done = 0;
+}
+
+PET.prototype.numRevivesDone = function() {
+	return this.revives_done;
+}
+
+PET.prototype.findWindow = function() {
+	var screenshot = Browser.takeScreenshot();
+	var corner_match = Vision.findMatch(screenshot, PET_WINDOW_CORNER_TPL, 0.99);
+	if (corner_match.isValid()) {
+		this.cached_window_position = corner_match.getRect().getTopLeft();
+		return true;
+	}
+	return false;
+}
+
+PET.prototype.getWindowRect = function(ignore_cache) {
+	if (ignore_cache === true || this.cached_window_position === undefined) {
+		this.findWindow();
+	}
+	if (this.cached_window_position === undefined) {
+		return new Rect();
+	}
+	return new Rect(
+		this.cached_window_position.getX(),
+		this.cached_window_position.getY(),
+		PET_WINDOW_SIZE.getWidth(),
+		PET_WINDOW_SIZE.getHeight() // Including the dropdown with max amount of gears
+	);
+}
+
+PET.prototype.relativeToRealCoords = function(relative_coords) {
+	return new Point(
+		// TODO: use Point.pointAdded once fixed by bf devs
+		this.cached_window_position.getX() + relative_coords.getX(),
+		this.cached_window_position.getY() + relative_coords.getY()
+	);
+}
+
+PET.prototype.getWindowImage = function() {
+	var screenshot = Browser.takeScreenshot();
+	return screenshot.copy(this.getWindowRect());
+}
+
+PET.prototype.hasFuel = function() {
+	// The play/stop/repair button is only visible if there is enough fuel.
+	// Those 3 buttons left part look the same, so if the find the left part
+	// of one of the buttons, there is fuel.
+	var window_image = this.getWindowImage();
+	return Vision.findMatch(window_image, GENERIC_PET_BTN_TPL, 0.98).isValid();
+}
+
+PET.prototype.isDestroyed = function() {
+	var window_image = this.getWindowImage();
+	return Vision.findMatch(window_image, PET_REPAIR_BTN_TPL, 0.98).isValid();
+}
+
+PET.prototype.isActivated = function() {
+	var window_image = this.getWindowImage();
+	return Vision.findMatch(window_image, PET_STOP_BTN_TPL, 0.98).isValid();
+}
+
+PET.prototype.clickButton = function(btn_tpl, min_score) {
+	var window_image = this.getWindowImage();
+	var btn_match = Vision.findMatch(window_image, btn_tpl, min_score);
+
+	if (btn_match.isValid()) {
+		var in_window_pos = btn_match.getRect().getCenter();
+		var real_coords = this.relativeToRealCoords(in_window_pos);
+
+		Browser.leftClick(real_coords);
+		Helper.sleep(1);
+
+		moveMouseToCenter();
+		return true;
+	}
+	return false;
+}
+
+PET.prototype.revive = function() {
+	var revived = this.clickButton(PET_REPAIR_BTN_TPL, 0.98);
+	if (revived) {
+		this.revives_done++;
+		return true;
+	}
+	return false;
+}
+
+PET.prototype.activate = function() {
+	return this.clickButton(PET_PLAY_BTN_TPL, 0.98);
+}
+
+PET.prototype.deactivate = function() {
+	return this.clickButton(PET_STOP_BTN_TPL, 0.98);
+}
+
+PET.prototype.openGearDropdown = function() {
+	return this.clickButton(GEAR_DROPDOWN_BTN_TPL, 0.99);;
+}
+
+PET.prototype.selectedGear = function() {
+	var window_image = this.getWindowImage();
+	if (Vision.findMatch(window_image, AUTOLOOTER_TPL, 0.99).isValid()) {
+		return "autolooter";
+	}
+	else if (Vision.findMatch(window_image, PASSIVEMODE_TPL, 0.99).isValid()) {
+		return "passivemode";
+	}
+	else if (Vision.findMatch(window_image, GUARDMODE_TPL, 0.99).isValid()) {
+		return "guardmode";
+	}
+	else if (Vision.findMatch(window_image, COLLECTOR_TPL, 0.99).isValid()) {
+		return "collector"; // Ressource-Collector
+	}
+	return "";
+}
+
+PET.prototype.selectGear = function(gear_name) {
+	var gear_entry_tpl = undefined;
+
+	switch (gear_name) {
+		case "autolooter":
+			gear_entry_tpl = AUTOLOOTER_ENTRY_TPL;
+			break;
+
+		case "passivemode":
+			gear_entry_tpl = PASSIVEMODE_ENTRY_TPL;
+			break;
+
+		case "guardmode":
+			gear_entry_tpl = GUARDMODE_ENTRY_TPL;
+			break;
+
+		case "collector":
+			gear_entry_tpl = COLLECTOR_ENTRY_TPL;
+			break;
+
+		default:
+			debug("Unknown gear name:", gear_name);
+			return false;
+	}
+
+	if (!this.openGearDropdown()) {
+		Helper.log("Couldn't open the PETs gear dropdown.");
+		return false;
+	}
+
+	var window_image = this.getWindowImage();
+	var gear_entry_match = Vision.findMatch(window_image, gear_entry_tpl, 0.99);
+
+	if (!gear_entry_match.isValid()) {
+		Helper.log("Couldn't find the gear entry in the gear list.");
+		return false;
+	}
+
+	var in_window_pos = gear_entry_match.getRect().getCenter();
+	var real_coords = this.relativeToRealCoords(in_window_pos);
+
+	Browser.leftClick(real_coords);
+	Helper.log("Gear selected:", gear_name);
+
+	Helper.sleep(1);
+	return true;
 }
 
 /* Main Algorithm */
