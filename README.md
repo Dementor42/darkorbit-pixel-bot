@@ -7,19 +7,4 @@ I made this script in my free time just to checkout what can be done with botfat
 Doing so I already discovered some bugs and made feature request to their dev team.
 Feel free to check this code out to learn how their software work. Cheers
 
-#### Roadmap? (Some things I want to try and test)
-- [x] Check that the user is logged in
-- [x] Fly randomly over the map.
-- [x] Let the ship reach it's destination before choosing a new destinaton
-- [ ] Automatically open required ingame windows
-- [ ] Automatically login
-- [x] Automatically reconnect (when connection lost)
-- [ ] Automatically start and repair PET
-- [ ] Let the ship collect bonus boxes
-- [ ] Let the ship collect pirate booty
-- [ ] Automatically cloak the ship
-- [x] Automatically repair the ship
-- [x] Fly back to defined map after death
-- [ ] Circle maps
-- [ ] Escape on low HP/Shield
-- [ ] Hunt NPCs on x-2
+[Roadmap](https://pbdo-bot.net/)
