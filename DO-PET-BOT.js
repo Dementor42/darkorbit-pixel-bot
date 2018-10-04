@@ -10,6 +10,11 @@ var CONFIG_AUTO_SHIP_REPAIR = true;
 var CONFIG_AUTO_SHIP_REPAIR_LOCATION = "base"; // Possible locations: "stage", "gate", "base"
 var CONFIG_MAX_SHIP_REPAIRS = 20; // The script will stop once they have been reached.
 
+var CONFIG_USE_PET = false;
+var CONFIG_MAX_PET_REPAIRS = 20;
+var CONFIG_PET_GEAR_TO_USE = "autolooter"; // Allowed values: "autolooter", "collector", "passivemode", "guardmode"
+var CONFIG_PET_CHECK_TIMEOUT_IN_MS = 5 * 60 * 1000; // minutes * seconds * milliseconds
+
 var CONFIG_USE_GLOBAL_NAV = true;
 var CONFIG_MAP = "4-1";
 
@@ -858,6 +863,39 @@ PET.prototype.selectGear = function(gear_name) {
 	return true;
 }
 
+PET.prototype.manage = function() {
+	if (this.isDestroyed()) {
+		Helper.log("The PET is destroyed!");
+
+		if (this.numRevivesDone() >= CONFIG_MAX_PET_REPAIRS) {
+			Helper.log("Max PET repairs already reached.");
+			return;
+		}
+
+		this.revive();
+		Helper.log("Your PET has been repaired.");
+	}
+
+	if (!this.isActivated()) {
+		this.activate();
+		Helper.log("PET activated!");
+	}
+
+	if (this.selectedGear() != CONFIG_PET_GEAR_TO_USE) {
+		Helper.log("The wrong PET gear is selected.");
+
+		if (this.selectGear(CONFIG_PET_GEAR_TO_USE)) {
+			Helper.log("Correct PET gear selected");
+		} else {
+			Helper.log("Couldn't select the PET gear:", CONFIG_PET_GEAR_TO_USE);
+		}
+	}
+}
+
+function shouldCheckPet(last_pet_check) {
+	return (new Date()).getTime() > last_pet_check + CONFIG_PET_CHECK_TIMEOUT_IN_MS;
+}
+
 /* Main Algorithm */
 
 function main() {
@@ -876,9 +914,13 @@ function main() {
 		}
 	}
 
-	// Keep track of whether we checked that we're still on the correct map after our ship has been destroyed.
-	// Initialy false to force a check when the script has been started.
+	// Keep track of things to check on startup and after the ship has been destroyed and revived.
+	// Tnitially all values are false to force a check when the script has been started.
 	var map_checked_after_death = false;
+	var pet_checked_after_death = false;
+
+	// Things to check from time to time.
+	var last_pet_check = new Date();
 
 	// Find and measure the minimap
 	var minimap = new Minimap();
@@ -886,7 +928,7 @@ function main() {
 	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###")
 
 	if (minimap.getLevel() === -1) {
-		Helper.log("The bot script was unable to find your ingame minimap.")
+		Helper.log("FATAL! The bot was unable to find the ingame Minimap. Stopping now.")
 		return;
 	}
 
@@ -897,9 +939,17 @@ function main() {
 	Helper.log("Minimap position:", outer_minimap.getLeft(), outer_minimap.getTop());
 	Helper.log("Minimap size:", outer_minimap.getWidth(), outer_minimap.getHeight());
 
+	// PET Setup
+	var pet = new PET();
+
+	if (CONFIG_USE_PET && !pet.findWindow()) {
+		Helper.log("FATAL! The bot was unable to find the PET window. Stopping now.");
+		return;
+	}
+
 	// Configure the navigator
 	var nav = new Navigator(minimap);
-	Helper.log("Ready to bot. Don't forget to activate your PET with looter gear!");
+	Helper.log("Starting to bot.");
 
 	// The main loop playing the game until the user stops the script
 	while (true) {
@@ -938,12 +988,21 @@ function main() {
 
 			Helper.sleep(2);
 			map_checked_after_death = false;
+			pet_checked_after_death = false;
 		}
 
 		// Make sure the bot is on the configured map
 		if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
 			nav.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
 			map_checked_after_death = true;
+		}
+
+		// Make sure the pet is working correctly
+		if (CONFIG_USE_PET && (!pet_checked_after_death || shouldCheckPet(last_pet_check))) {
+			Helper.log("Time to check the PET...");
+			pet.manage();
+			pet_checked_after_death = true;
+			last_pet_check = new Date();
 		}
 
 		// Local navigation
