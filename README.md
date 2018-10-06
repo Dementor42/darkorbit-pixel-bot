@@ -1,10 +1,28 @@
-# About DO PET BOT
-This script makes your spaceship navigate over any DarkOrbit map you put it one.
-While it does so you may let your PET collect loot.
+# Free DarkOrbit Pixel Bot
 
-You need the [botfather.io](https://botfather.io) client to run this bot script.
-I made this script in my free time just to checkout what can be done with botfather.
-Doing so I already discovered some bugs and made feature request to their dev team.
-Feel free to check this code out to learn how their software work. Cheers
+This script makes your spaceship navigate randomly over any DarkOrbit map.
+It will manage your PET, repair your ship, reconnect after disconnects and more.
+Take a look at the features and roadmap section to see what this free and opensource bot can do.
 
-[Roadmap](https://pbdo-bot.net/)
+## How to run this bot script?
+
+- Download this repository and extract it
+- Edit the configuration at the top of the DO-PET-BOT.js file
+- Use the [botfather.io client](https://botfather.io/downloads) to run the bot script
+
+## Features and Roadmap:
+
+[x] Full Background Mode (integrated browser)
+[x] Automatic Login
+[x] Automatic Reconnect
+[x] Automatic Ship Repair
+[x] Adjustable max. Ship Repairs
+[x] Fly back to Map after Death
+[x] Random Map Navigation
+[x] Automatic PET Repair
+[x] Automatic PET Gear Selection
+[ ] Automatic Cloak CPU activation
+[ ] Automatic Bonus Box collection
+[ ] Automatic Pirate Booty collection
+[ ] Automatical flee on low HP
+[ ] Automatic NPC Shooting on lower maps
