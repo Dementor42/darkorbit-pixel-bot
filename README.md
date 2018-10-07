@@ -22,7 +22,7 @@ Take a look at the features and roadmap section to see what this free and openso
 [x] Automatic PET Repair
 [x] Automatic PET Gear Selection
 [ ] Automatic Cloak CPU activation
-[ ] Automatic Bonus Box collection
+[x] Automatic Bonus Box collection
 [ ] Automatic Pirate Booty collection
 [ ] Automatical flee on low HP
 [ ] Automatic NPC Shooting on lower maps
