@@ -1,4 +1,6 @@
-/* Configuration */
+// +-------------------------------------------+
+// | User Configuration (feel free to edit it) |
+// +-------------------------------------------+
 
 var CONFIG_USE_AUTO_LOGIN = false;
 var CONFIG_AUTO_LOGIN_USERNAME = "";
@@ -15,10 +17,15 @@ var CONFIG_MAX_PET_REPAIRS = 20;
 var CONFIG_PET_GEAR_TO_USE = "autolooter"; // Allowed values: "autolooter", "collector", "passivemode", "guardmode"
 var CONFIG_PET_CHECK_TIMEOUT_IN_MS = 5 * 60 * 1000; // minutes * seconds * milliseconds
 
-var CONFIG_USE_GLOBAL_NAV = true;
+var CONFIG_USE_GLOBAL_NAV = false;
 var CONFIG_MAP = "4-1";
 
-/* Templates and Data */
+var CONFIG_COLLECT_LOOT = true; // Works only in 2D mode
+var CONFIG_COLLECTOR_TIMEOUT_IN_MS = 200; // Increase to reduce CPU/GPU usage, lower to miss less loot.
+
+// +---------------------------------------------------------------------+
+// | Templates and Data (DON'T TOUCH ANYTHING BELOW THIS LINE AS A USER) |
+// +---------------------------------------------------------------------+
 
 var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
@@ -59,6 +66,13 @@ var COLLECTOR_ENTRY_TPL = new Image(PET_TPL_DIR + "collector_entry.png");
 
 var PET_WINDOW_CORNER_TPL = new Image(PET_TPL_DIR + "window_corner.png");
 var PET_WINDOW_SIZE = new Size(272, 320); // Including the gear dropdown menu with max gears
+
+var LOOT_SWF_URL = "https://pbdo-bot.net/magic/2D/circle_ffff00.swf";
+var LOOT_MIN_HSV = new Color(55, 200, 200, "hsv");
+var LOOT_MAX_HSV = new Color(70, 255, 255, "hsv");
+var LOOT_BLOB_TPL = new BlobTpl(1200, 1220);
+
+var GENERAL_CHECK_TIMEOUT_IN_MS = 1000 * 60 * 3; // Check every 3 minutes
 
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
@@ -256,11 +270,13 @@ var JGATE_POS = {
 	__9_4: { __9_2: GATE_BL, __9_3: GATE_TL }
 };
 
-var SHIP_START_MOVING_TIME_IN_MS = 2000;
-var SHIP_TRAVEL_TIMEOUT_IN_MS = 2000;
+var OPTIMISTIC_ACCELERATION_TIME_IN_MS = 500;
+var SAFE_ACCELERATION_TIME_IN_MS = 2000;
 var JUMP_TIMEOUT_IN_MS = 5000;
 
-/* Convenience Methods */
+// +--------------------------------+
+// | Convenience Methods and Helper |
+// +--------------------------------+
 
 function debug() {
 	var debug_message = "(ignore me)";
@@ -289,7 +305,25 @@ function moveMouseToCenter() {
 	Browser.moveMouseTo(Browser.getRect().getCenter());
 }
 
-/* Ingame Minimap */
+function getClosestMatch(matches) {
+	var closest_match = new Match();
+	var center = Browser.getRect().getCenter();
+
+	for (var i = 0; i < matches.length; i++) {
+		var match = matches[i];
+
+		if (!closest_match.isValid() || match.getRect().getCenter().manhattanDistance(center) 
+			< closest_match.getRect().getCenter().manhattanDistance(center)) {
+			closest_match = match;
+		}
+	}
+
+	return closest_match;
+}
+
+// +--------------------------+
+// | Ingame Minimap Managment |
+// +--------------------------+
 
 var Minimap = function() {
 	this.cached_level = -1;
@@ -415,7 +449,9 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 	return "";
 }
 
-/* Navigation */
+// +-----------------------------+
+// | Local and Global Navigation |
+// +-----------------------------+
 
 var Navigator = function(minimap) {
 	this.minimap = minimap;
@@ -536,20 +572,36 @@ Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 
 Navigator.prototype.travelTo = function(dest_coords) {
 	this.minimap.leftClick(dest_coords);
-	Helper.msleep(SHIP_START_MOVING_TIME_IN_MS);
+	Helper.msleep(SAFE_ACCELERATION_TIME_IN_MS);
 
-	while (this.shipIsMoving()) {
-		// TODO: check connection
-		// TODO: check ship health
-		Helper.log("Traveling...");
-		Helper.msleep(SHIP_TRAVEL_TIMEOUT_IN_MS);
+	// TODO: Come up with something "better"?
+	if (!this.monitorQuickFlight(1000 * 90)) {
+		// The monitor method aborded after 90 seconds. Thats super long, something might went wrong.
+		Helper.log("A flight took too long, something might went wrong.");
+		return false;
 	}
 
 	Helper.log("Ship no longer traveling, destination reached");
 	return true;
 }
 
-/* Client */
+Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
+	var start_time = new Date().getTime();
+
+	while (this.shipIsMoving()) {
+		if (start_time >= (new Date()).getTime() + max_flight_time_in_ms) {
+			return false; // max flight time reached
+		}
+
+		Helper.msleep(100);
+	}
+
+	return true; // Ship reached destination
+}
+
+// +------------------+
+// | Client Managment |
+// +------------------+
 
 var Client = function() {
 	this.revives_done = 0;
@@ -673,6 +725,10 @@ Client.prototype.autoLogin = function(username, password) {
 	Helper.sleep(2);
 
 	Browser.finishLoading();
+	this.getIngame();
+}
+
+Client.prototype.getIngame = function() {
 	var ingame_url = Browser.getUrl().getHost() + "/indexInternal.es?action=internalMapRevolution";
 
 	Browser.loadUrl(ingame_url);
@@ -693,7 +749,13 @@ Client.prototype.autoLogin = function(username, password) {
 	}
 }
 
-/* PET */
+Client.prototype.modifyResources2D = function() {
+	Browser.replaceResource("box2.swf", LOOT_SWF_URL);
+}
+
+// +---------------+
+// | PET Managment |
+// +---------------+
 
 var PET = function() {
 	this.cached_window_position = undefined;
@@ -896,12 +958,135 @@ function shouldCheckPet(last_pet_check) {
 	return (new Date()).getTime() > last_pet_check + CONFIG_PET_CHECK_TIMEOUT_IN_MS;
 }
 
-/* Main Algorithm */
+// +---------------------+
+// | Bonusbox Collection |
+// +---------------------+
+
+var Collector = function(ship, navi) {
+	this.ship = ship;
+	this.navi = navi; // Navigator
+}
+
+Collector.prototype.filterAnimationMatches = function(matches) {
+	var filtered_matches = [];
+	var browser_center = Browser.getRect().getCenter();
+
+	for (var i = 0; i < matches.length; i++) {
+		var match = matches[i];
+		var match_center = match.getRect().getCenter();
+		
+		// Ignore centered matches below the ship
+		if (match_center.getY() > browser_center.getY() && match_center.getY() < browser_center.getY() + 100
+			&& match_center.getX() > browser_center.getX() - 10 && match_center.getX() < browser_center.getX() + 10) {
+
+			//Helper.log("Match ignored:", match);
+			continue;
+		}
+
+		filtered_matches.push(match);
+	}
+
+	return filtered_matches;
+}
+
+Collector.prototype.findClosestLoot = function(prevent_animation_detection) {
+	var screenshot = Browser.takeScreenshot();
+	var isolated = screenshot.isolateColorRange(LOOT_MIN_HSV, LOOT_MAX_HSV);
+	var loot_matches = Vision.findBlobs(isolated, LOOT_BLOB_TPL);
+
+	if (prevent_animation_detection) {
+		loot_matches = this.filterAnimationMatches(loot_matches);
+	}
+
+	return getClosestMatch(loot_matches);
+}
+
+Collector.prototype.collectLoot = function() {
+	for (var loot_in_a_row = 0; loot_in_a_row < 20; loot_in_a_row++) {
+
+		if (loot_in_a_row == 0 && this.findClosestLoot().isValid()) {
+			// TODO: maybe create a caching Client.clickLogout method
+			var lbm = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
+			Browser.leftClick(lbm.getRect().getCenter());
+			Helper.msleep(50); // It takes a moment for the ship to stop
+
+			// We assume that the logout will be canceled by the collector clicking loot
+			// or the navigator clicking on the minimap.
+		}
+
+		// After the first match try to prevent to find matches of loot we
+		// just collected but whichs animation is not finished yet.
+		// We could do a timeout instead, but that would slow us down.
+		var closest_loot = this.findClosestLoot(loot_in_a_row > 0);
+		
+		if (!closest_loot.isValid()) {
+			// Nothing found and clicked this time, but maybe we found something before.
+			return loot_in_a_row > 0;
+		}
+
+		//Helper.log(closest_loot);
+
+		Browser.leftClick(closest_loot.getRect().getCenter());
+		Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
+
+		if (!this.navi.monitorQuickFlight(10 * 1000)) {
+			// It took longer than 10 seconds to reach the loot. Something might went wrong.
+			return false;
+		}
+
+		Helper.log("Just collected something, looking for more...");
+		Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
+	}
+
+	// Finding more than 20 collectable in one spot is unlikely. We might be stuck somehow.
+	return false;
+}
+
+// +---------------------------------------------------------------+
+// | Main Method and Algorithm, this uses everything defined above |
+// +---------------------------------------------------------------+
 
 function main() {
 
-	// Setup the client
+	// +--------------------------+
+	// | Inform and warn the user |
+	// +--------------------------+
+
+	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###")
+
+	// +----------------------------+
+	// | Timers, counters and flags |
+	// +----------------------------+
+
+	var map_checked_after_death = false; // false => check on startup
+	var pet_checked_after_death = false; // false => check on startup
+
+	var general_checks_urgend = true; // true => check on startup
+	var just_collected_something = false;
+
+	// Things to check from time to time.
+	var last_general_check = new Date();
+	var last_pet_check = new Date();
+	var movement_timer = new Date();
+
+	// +----------------------+
+	// | Bot components setup |
+	// +----------------------+
+
 	var client = new Client();
+	var minimap = new Minimap();
+	var pet = new PET();
+	var navi = new Navigator(minimap);
+	var collector = new Collector(undefined, navi);
+
+	// +------------------------------+
+	// | Prepare the client and login |
+	// +------------------------------+
+
+	if (CONFIG_COLLECT_LOOT) {
+		client.modifyResources2D();
+		Helper.log("REMEMBER: The loot collector currently only works in 2D mode.");
+	}
 
 	if (!client.isIngame()) {
 		if (CONFIG_USE_AUTO_LOGIN) {
@@ -914,18 +1099,22 @@ function main() {
 		}
 	}
 
-	// Keep track of things to check on startup and after the ship has been destroyed and revived.
-	// Tnitially all values are false to force a check when the script has been started.
-	var map_checked_after_death = false;
-	var pet_checked_after_death = false;
+	else if (CONFIG_COLLECT_LOOT) {
+		// The client is already ingame. Reload to make sure ressource modification works.
+		Helper.log("Reloading to make the loot collector work...");
 
-	// Things to check from time to time.
-	var last_pet_check = new Date();
+		Browser.reload();
+		Browser.finishLoading();
 
-	// Find and measure the minimap
-	var minimap = new Minimap();
+		client.getIngame();
+		Helper.sleep(2);
 
-	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###")
+		Helper.log("Loot collector prepared.");
+	}
+
+	// +------------------------------+
+	// | Find and measure the minimap |
+	// +------------------------------+	
 
 	if (minimap.getLevel() === -1) {
 		Helper.log("FATAL! The bot was unable to find the ingame Minimap. Stopping now.")
@@ -939,80 +1128,115 @@ function main() {
 	Helper.log("Minimap position:", outer_minimap.getLeft(), outer_minimap.getTop());
 	Helper.log("Minimap size:", outer_minimap.getWidth(), outer_minimap.getHeight());
 
-	// PET Setup
-	var pet = new PET();
+	// +---------------------------------+
+	// | Find and measure the PET window |
+	// +---------------------------------+
 
 	if (CONFIG_USE_PET && !pet.findWindow()) {
 		Helper.log("FATAL! The bot was unable to find the PET window. Stopping now.");
 		return;
 	}
 
-	// Configure the navigator
-	var nav = new Navigator(minimap);
+	// +-------------------------------------+
+	// | Ready to bot, running bot algorithm |
+	// +-------------------------------------+
+	
 	Helper.log("Starting to bot.");
 
 	// The main loop playing the game until the user stops the script
 	while (true) {
 
-		// TODO: Don't check lost connection and ship destruction to often.
+		// +-------------------+
+		// | Do general checks |
+		// +-------------------+
 
-		// Reconnect, if disconnected and auto-reconnect is enabled
-		if (client.isDisconnected()) {
-			Helper.log("Client disconnected.");
+		if (general_checks_urgend || last_general_check.getTime() > (new Date()).getTime() + GENERAL_CHECK_TIMEOUT_IN_MS) {
 
-			if (!CONFIG_AUTO_RECONNECT) {
-				Helper.log("Auto-reconnect disabled. Stopping the script...");
-				return;
+			// Reset genereal checks triggers
+			general_checks_urgend = false;
+			last_general_check = new Date();
+
+			// Reconnect, if disconnected and auto-reconnect is enabled
+			if (client.isDisconnected()) {
+				Helper.log("Client disconnected.");
+
+				if (!CONFIG_AUTO_RECONNECT) {
+					Helper.log("Auto-reconnect disabled. Stopping the script...");
+					return;
+				}
+
+				Helper.log("Trying to reconnect...");
+				client.reconnect();
 			}
 
-			Helper.log("Trying to reconnect...");
-			client.reconnect();
-		}
+			// Repair the ship, if destroyed and auto repair is enabled
+			if (client.isDestroyed()) {
+				Helper.log("Ship destroyed.");
 
-		// Repair the ship, if destroyed and auto repair is enabled
-		if (client.isDestroyed()) {
-			Helper.log("Ship destroyed.");
+				if (!CONFIG_AUTO_SHIP_REPAIR) {
+					Helper.log("Auto-ship-repair disabled. Stopping the script...");
+					return;
+				}
 
-			if (!CONFIG_AUTO_SHIP_REPAIR) {
-				Helper.log("Auto-ship-repair disabled. Stopping the script...");
-				return;
+				if (client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
+					Helper.log("Max configured ship repairs reached. Stopping...");
+					return;
+				}
+
+				Helper.log("Trying to repair the ship...");
+				client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
+
+				Helper.sleep(2);
+				map_checked_after_death = false;
+				pet_checked_after_death = false;
 			}
 
-			if (client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
-				Helper.log("Max configured ship repairs reached. Stopping...");
-				return;
+			// Make sure the bot is on the configured map
+			if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
+				navi.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
+				map_checked_after_death = true;
 			}
 
-			Helper.log("Trying to repair the ship...");
-			client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
-
-			Helper.sleep(2);
-			map_checked_after_death = false;
-			pet_checked_after_death = false;
+			// Make sure the pet is working correctly
+			if (CONFIG_USE_PET && (!pet_checked_after_death || shouldCheckPet(last_pet_check))) {
+				Helper.log("Time to check the PET...");
+				pet.manage();
+				pet_checked_after_death = true;
+				last_pet_check = new Date();
+			}
 		}
 
-		// Make sure the bot is on the configured map
-		if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
-			nav.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
-			map_checked_after_death = true;
+		// +--------------+
+		// | Collect loot |
+		// +--------------+
+
+		var just_tried_to_collect_something = false;
+
+		if (CONFIG_COLLECT_LOOT) {
+			just_tried_to_collect_something = collector.collectLoot();
+			Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
 		}
 
-		// Make sure the pet is working correctly
-		if (CONFIG_USE_PET && (!pet_checked_after_death || shouldCheckPet(last_pet_check))) {
-			Helper.log("Time to check the PET...");
-			pet.manage();
-			pet_checked_after_death = true;
-			last_pet_check = new Date();
-		}
+		// +------------------+
+		// | Local navigation |
+		// +------------------+
 
-		// Local navigation
-		if (nav.shipIsMoving()) {
-			// Wait for the ship to reach it's destination.
-			// While doing so the pet can collect bonus boxes.
-			Helper.sleep(2);
-		} else {
+		var time_to_check_navi = (new Date()).getTime() > (movement_timer.getTime() + 3000); // We didn't check for 3 seconds
+
+		if (just_tried_to_collect_something || (time_to_check_navi && !navi.shipIsMoving())) {
+
+			// Reset the movement timer
+			movement_timer = new Date();
+
+			// Move
 			Helper.log("Flying to a random location on the current map...");
-			Browser.leftClick(nav.getNextDestination());
+			Browser.leftClick(navi.getNextDestination());
+			continue;
+		}
+
+		// Sleep if we're moving and not collecting
+		else if (!CONFIG_COLLECT_LOOT) {
+			Helper.sleep(2);
 		}
 	}
 }
