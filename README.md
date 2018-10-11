@@ -10,6 +10,8 @@ Take a look at the features and roadmap section to see what this free and openso
 - Edit the configuration at the top of the DO-PET-BOT.js file
 - Use the [botfather.io client](https://botfather.io/downloads) to run the bot script
 
+[Step by step tutorial](https://pbdo-bot.net/tutorial.html)
+
 ## Features and Roadmap:
 
 [x] Full Background Mode (integrated browser)
