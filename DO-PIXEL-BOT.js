@@ -1053,7 +1053,8 @@ function main() {
 	// | Inform and warn the user |
 	// +--------------------------+
 
-	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###")
+	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###");
+	var client = new Client();
 
 	// +----------------------------+
 	// | Timers, counters and flags |
@@ -1069,16 +1070,6 @@ function main() {
 	var last_general_check = new Date();
 	var last_pet_check = new Date();
 	var movement_timer = new Date();
-
-	// +----------------------+
-	// | Bot components setup |
-	// +----------------------+
-
-	var client = new Client();
-	var minimap = new Minimap();
-	var pet = new PET();
-	var navi = new Navigator(minimap);
-	var collector = new Collector(undefined, navi);
 
 	// +------------------------------+
 	// | Prepare the client and login |
@@ -1112,6 +1103,15 @@ function main() {
 
 		Helper.log("Loot collector prepared.");
 	}
+
+	// +----------------------+
+	// | Bot components setup |
+	// +----------------------+
+
+	var minimap = new Minimap();
+	var pet = new PET();
+	var navi = new Navigator(minimap);
+	var collector = new Collector(undefined, navi);
 
 	// +------------------------------+
 	// | Find and measure the minimap |
