@@ -751,6 +751,7 @@ Client.prototype.getIngame = function() {
 
 Client.prototype.modifyResources2D = function() {
 	Browser.replaceResource("box2.swf", LOOT_SWF_URL);
+	Browser.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
 }
 
 // +---------------+
