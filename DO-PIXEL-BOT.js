@@ -27,6 +27,8 @@ var CONFIG_COLLECTOR_TIMEOUT_IN_MS = 200; // Increase to reduce CPU/GPU usage, l
 // | Templates and Data (DON'T TOUCH ANYTHING BELOW THIS LINE AS A USER) |
 // +---------------------------------------------------------------------+
 
+var SCRIPT_VERSION = "1.0.0";
+
 var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
 var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
@@ -1054,6 +1056,7 @@ function main() {
 	// +--------------------------+
 
 	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###");
+	Helper.log("Used script version:", SCRIPT_VERSION, "(You have to check for updates manually)");
 	var client = new Client();
 
 	// +----------------------------+
