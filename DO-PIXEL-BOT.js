@@ -312,24 +312,16 @@ var JUMP_TIMEOUT_IN_MS = 5000;
 // | Convenience Methods and Helper |
 // +--------------------------------+
 
-function debug() {
-	var debug_message = "(ignore me)";
-	for (var i = 0; i < arguments.length; i++) {
-		debug_message += " " + arguments[i];
-	}
-	Helper.log(debug_message);
-}
-
 function convertInternToExternMapname(intern_mapname) {
 	if (intern_mapname.indexOf("__") === -1) {
-		debug(intern_mapname, "is not an intern mapname");
+		Helper.debug(intern_mapname, "is not an intern mapname");
 	}
 	return intern_mapname.replace("__", "").replace("_", "-");
 }
 
 function convertExternToInternMapname(extern_mapname) {
 	if (extern_mapname.indexOf("-") === -1) {
-		debug(extern_mapname, "is not an extern mapname");
+		Helper.debug(extern_mapname, "is not an extern mapname");
 	}
 	return "__" + extern_mapname.replace("-", "_");
 }
@@ -369,7 +361,7 @@ Minimap.prototype.calculateTelemetry = function(screenshot) {
 	for (var i = MM_LEVEL_TPLS.length - 1; i >= 0; i--) {
 		var match = Vision.findMatch(screenshot, MM_LEVEL_TPLS[i], 0.98);
 
-		//Helper.log(match);
+		Helper.debug("Minimap icon:", match);
 
 		if (match.isValid()) {
 			this.cached_level = i;
@@ -472,7 +464,7 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 		var mapname_tpl = MAPNAME_TPLS[i];
 		var match = Vision.findMatch(monochrome_mn, mapname_tpl, 0.95);
 		
-		//Helper.log(match);
+		Helper.debug("Mapname match, #" + i + ":", match);
 
 		if (match.isValid()) {
 			this.cached_intern_mapname = INTERN_MAPNAME_MAPPING[i];
@@ -480,6 +472,7 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 		}
 	}
 
+	Helper.debug("No mapname matched.");
 	return "";
 }
 
@@ -538,7 +531,7 @@ Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 		return;
 	}
 
-	//Helper.log("Route to destination map:", route);
+	Helper.debug("Disjkstra path to destination map:", route);
 	route.shift(); // remove first element (the map were currently on)
 
 	var route_found_message = "Route from " + ex_cm + " to " + ex_dm + " found: " + ex_cm;
@@ -590,9 +583,10 @@ Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 
 	var screenshot = Browser.takeScreenshot();
 	var jump_button_match = Vision.findMatch(screenshot, JUMP_BUTTON_TPL, 0.92);
+	Helper.debug("Best jump button match found:", jump_button_match);
 
 	if (!jump_button_match.isValid()) {
-		Helper.log("Clicking the jump button failed.")
+		Helper.log("Clicking the jump button failed.");
 		return false;
 	}
 
@@ -628,9 +622,11 @@ Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
 			return false; // max flight time reached
 		}
 
+		Helper.debug("Flying somewhere quickly...");
 		Helper.msleep(100);
 	}
 
+	Helper.debug("Destination reached, quick flight done.");
 	return true; // Ship reached destination
 }
 
@@ -665,6 +661,7 @@ Client.prototype.revive = function(location) {
 		case "base":
 			option_match = Vision.findMatch(screenshot, REPAIR_ON_BASE_TPL, 0.95);
 			break;
+		// base is selected by default anyway
 	}
 
 	if (option_match.isValid()) {
@@ -704,7 +701,7 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 	var disconnected_match = Vision.findMatch(screenshot, DISCONNECTED_TPL, 0.95);
 
 	if (!disconnected_match.isValid()) {
-		// The client seems to be not disconnected.
+		Helper.debug("The client seems to be not disconnected.");
 		return false;
 	}
 
@@ -728,12 +725,14 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 
 Client.prototype.isIngame = function() {
 	if (Browser.getUrl().getQuery().indexOf("internalMapRevolution") === -1) {
+		Helper.debug("Client not ingame. Url does not contain internalMapRevolution");
 		return false;
 	}
 
 	var screenshot = Browser.takeScreenshot();
 	var logout_button_match = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
 
+	Helper.debug("Logout button match (isIngame check):", logout_button_match);
 	return logout_button_match.isValid() || this.isDisconnected() || this.isDestroyed();
 }
 
@@ -872,6 +871,8 @@ PET.prototype.clickButton = function(btn_tpl, min_score) {
 		moveMouseToCenter();
 		return true;
 	}
+
+	Helper.debug("Button not found in PET.clickButton:", btn_match);
 	return false;
 }
 
@@ -910,6 +911,7 @@ PET.prototype.selectedGear = function() {
 	else if (Vision.findMatch(window_image, COLLECTOR_TPL, 0.99).isValid()) {
 		return "collector"; // Ressource-Collector
 	}
+	Helper.debug("Unknown gear selected");
 	return "";
 }
 
@@ -934,7 +936,7 @@ PET.prototype.selectGear = function(gear_name) {
 			break;
 
 		default:
-			debug("Unknown gear name:", gear_name);
+			Helper.debug("Unknown gear name:", gear_name);
 			return false;
 	}
 
@@ -1011,7 +1013,7 @@ Collector.prototype.filterAnimationMatches = function(matches) {
 		if (match_center.getY() > browser_center.getY() && match_center.getY() < browser_center.getY() + 100
 			&& match_center.getX() > browser_center.getX() - 10 && match_center.getX() < browser_center.getX() + 10) {
 
-			//Helper.log("Match ignored:", match);
+			Helper.debug("Loot match blow ship ignored:", match);
 			continue;
 		}
 
@@ -1044,6 +1046,7 @@ Collector.prototype.collectLoot = function() {
 
 			// We assume that the logout will be canceled by the collector clicking loot
 			// or the navigator clicking on the minimap.
+			Helper.debug("Hope that the navigator cancels the logout-process.");
 		}
 
 		// After the first match try to prevent to find matches of loot we
@@ -1056,13 +1059,13 @@ Collector.prototype.collectLoot = function() {
 			return loot_in_a_row > 0;
 		}
 
-		//Helper.log(closest_loot);
+		Helper.debug("Closest loot found:", closest_loot);
 
 		Browser.leftClick(closest_loot.getRect().getCenter());
 		Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 
 		if (!this.navi.monitorQuickFlight(10 * 1000)) {
-			// It took longer than 10 seconds to reach the loot. Something might went wrong.
+			Helper.debug("It took longer than 10 seconds to reach the loot. Something might went wrong.");
 			return false;
 		}
 
@@ -1070,7 +1073,7 @@ Collector.prototype.collectLoot = function() {
 		Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
 	}
 
-	// Finding more than 20 collectable in one spot is unlikely. We might be stuck somehow.
+	Helper.debug("Finding more than 20 collectable in one spot is unlikely. We might be stuck somehow.");
 	return false;
 }
 
@@ -1230,6 +1233,7 @@ function main() {
 
 			// Make sure the bot is on the configured map
 			if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
+				Helper.debug("Time to check whether we're on the correct map.");
 				navi.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
 				map_checked_after_death = true;
 			}
