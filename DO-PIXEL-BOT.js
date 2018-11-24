@@ -501,13 +501,14 @@ Navigator.prototype.getNextDestination = function() {
 }
 
 Navigator.prototype.shipIsMoving = function() {
-	var velocity_image = this.minimap.getVelocityImage();
+	// TODO: move this once a Ship class exists
 
 	// Isolating white on the image will render it black with white numbers on.
 	// We compare it to an black image. If they are the same, we're not moving.
 	var min_hsv = new Color(0, 0, 0, "hsv");
 	var max_hsv = new Color(10, 255, 255, "hsv");
 
+	var velocity_image = this.minimap.getVelocityImage();
 	var blacked_bg = velocity_image.isolateColorRange(min_hsv, max_hsv);
 
 	var pixel_equality = blacked_bg.pixelEquality(NO_VELOCITY_REF);
@@ -636,6 +637,7 @@ Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
 
 var Client = function() {
 	this.revives_done = 0;
+	this.cached_logout_button = new Match();
 }
 
 Client.prototype.numRevivesDone = function() {
@@ -785,6 +787,21 @@ Client.prototype.getIngame = function() {
 Client.prototype.modifyResources2D = function() {
 	Browser.replaceResource("box2.swf", LOOT_SWF_URL);
 	Browser.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
+}
+
+Client.prototype.haltShip = function(ignore_cache) {
+	// TODO: move this once a Ship class exists
+	if (ignore_cache === true || !this.cached_logout_button.isValid()) {
+		this.cached_logout_button = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
+		Helper.debug("Cached logout button (haltShip):", this.cached_logout_button);
+	}
+	if (this.cached_logout_button.isValid()) {
+		// Triggering the logout process makes the ship stop moving instantly
+		Browser.leftClick(this.cached_logout_button.getRect().getCenter());
+		Helper.msleep(50); // It takes a moment for the ship to stop
+		return true;
+	}
+	return false;
 }
 
 // +---------------+
@@ -991,8 +1008,8 @@ PET.prototype.manage = function() {
 // | Bonusbox Collection |
 // +---------------------+
 
-var Collector = function(ship, navi) {
-	this.ship = ship;
+var Collector = function(client, navi) {
+	this.client = client;
 	this.navi = navi; // Navigator
 }
 
@@ -1034,10 +1051,7 @@ Collector.prototype.collectLoot = function() {
 	for (var loot_in_a_row = 0; loot_in_a_row < 20; loot_in_a_row++) {
 
 		if (loot_in_a_row == 0 && this.findClosestLoot().isValid()) {
-			// TODO: maybe create a caching Client.clickLogout method
-			var lbm = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
-			Browser.leftClick(lbm.getRect().getCenter());
-			Helper.msleep(50); // It takes a moment for the ship to stop
+			this.client.haltShip(); // by triggering the logout process
 
 			// We assume that the logout will be canceled by the collector clicking loot
 			// or the navigator clicking on the minimap.
@@ -1145,7 +1159,7 @@ function main() {
 	var minimap = new Minimap();
 	var pet = new PET();
 	var navi = new Navigator(minimap);
-	var collector = new Collector(undefined, navi);
+	var collector = new Collector(client, navi);
 
 	// +------------------------------+
 	// | Find and measure the minimap |
