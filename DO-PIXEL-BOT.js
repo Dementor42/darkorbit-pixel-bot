@@ -582,7 +582,7 @@ Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 	Helper.log("Trying to find and click the jump button.");
 
 	var screenshot = Browser.takeScreenshot();
-	var jump_button_match = Vision.findMatch(screenshot, JUMP_BUTTON_TPL, 0.92);
+	var jump_button_match = Vision.findMatch(screenshot, JUMP_BUTTON_TPL, 0.8);
 	Helper.debug("Best jump button match found:", jump_button_match);
 
 	if (!jump_button_match.isValid()) {
