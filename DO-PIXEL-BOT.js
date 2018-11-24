@@ -532,7 +532,7 @@ Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 	var ex_cm = convertInternToExternMapname(current_intern_mapname);
 	var ex_dm = convertInternToExternMapname(dest_intern_mapname);
 
-	var route = PathFinder.findShortestPath(MAP_GRAPH, current_intern_mapname, dest_intern_mapname);
+	var route = Algorithm.dijkstra(MAP_GRAPH, current_intern_mapname, dest_intern_mapname);
 	if (route.length == 0) {
 		Helper.log("No route from", ex_cm, "to", ex_dm, "found.");
 		return;
