@@ -705,10 +705,9 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 		return false;
 	}
 
-	// TODO: report that botfathers Point.pointAdded method doesnt work?!
-
+	// The reconnect button is slightly below the match (we're looking for the big X icon)
 	var tpl_bl = disconnected_match.getRect().getBottomLeft();
-	var new_connection_btn = new Point(tpl_bl.getX() + 10, tpl_bl.getY() + 10); // Add tpl to button offset manuelly -.-
+	var new_connection_btn = tpl_bl.pointAdded(new Point(10, 10));
 
 	Browser.leftClick(new_connection_btn);
 	Helper.log("Reconnect button clicked.");
@@ -827,11 +826,7 @@ PET.prototype.getWindowRect = function(ignore_cache) {
 }
 
 PET.prototype.relativeToRealCoords = function(relative_coords) {
-	return new Point(
-		// TODO: use Point.pointAdded once fixed by bf devs
-		this.cached_window_position.getX() + relative_coords.getX(),
-		this.cached_window_position.getY() + relative_coords.getY()
-	);
+	return this.cached_window_position.pointAdded(relative_coords);
 }
 
 PET.prototype.getWindowImage = function() {
