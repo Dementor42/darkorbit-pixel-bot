@@ -272,6 +272,38 @@ var JGATE_POS = {
 	__9_4: { __9_2: GATE_BL, __9_3: GATE_TL }
 };
 
+var JGATE_POS = {
+	__1_1: { __1_2: GATE_BR },
+	__1_2: { __1_1: GATE_TL, __1_3: GATE_TR, __1_4: GATE_BR },
+	__1_3: { __1_2: GATE_BL, __1_4: GATE_BR, __2_3: GATE_TR },
+	__1_4: { __1_2: GATE_TL, __1_3: GATE_TR, __4_1: GATE_CR, __3_4: GATE_BR },
+	__4_1: { __1_4: GATE_CL, __4_2: GATE_TR, __4_3: GATE_BR, __4_4: GATE_CC },
+	__2_1: { __2_2: GATE_BL },
+	__2_2: { __2_1: GATE_TR, __2_3: GATE_BL, __2_4: GATE_BR },
+	__2_3: { __2_2: GATE_TR, __2_4: GATE_BR, __1_3: GATE_BL },
+	__2_4: { __2_2: GATE_TL, __2_3: GATE_TR, __4_2: GATE_CB, __3_3: GATE_BL },
+	__4_2: { __2_4: GATE_CT, __4_1: GATE_BL, __4_3: GATE_BR, __4_4: GATE_CC },
+	__3_1: { __3_2: GATE_TL },
+	__3_2: { __3_1: GATE_BR, __3_3: GATE_TR, __3_4: GATE_TL },
+	__3_3: { __3_2: GATE_BR, __3_4: GATE_BL, __2_4: GATE_TL },
+	__3_4: { __3_2: GATE_BR, __3_3: GATE_TR, __4_3: GATE_CT, __1_4: GATE_TL },
+	__4_3: { __3_4: GATE_CR, __4_1: GATE_BL, __4_2: GATE_TL, __4_4: GATE_CC },
+	__4_4: { __4_1: GATE_44LI, __4_2: GATE_44TI, __4_3: GATE_44BI, __1_5: GATE_44L, __2_5: GATE_44T, __3_5: GATE_44B },
+	__4_5: { __5_1: GATE_45BI, __1_5: GATE_45L, __2_5: GATE_45T, __3_5: GATE_45B },
+	__1_5: { __4_4: GATE_CR, __4_5: GATE_BR, __1_6: GATE_TL, __1_7: GATE_BL },
+	__1_6: { __1_5: GATE_BR, __1_8: GATE_BL },
+	__1_7: { __1_5: GATE_TR, __1_8: GATE_TL },
+	__1_8: { __1_6: GATE_TR, __1_7: GATE_BR },
+	__2_5: { __4_4: GATE_BL, __4_5: GATE_BR, __2_6: GATE_TL, __2_7: GATE_TR },
+	__2_6: { __2_5: GATE_BL, __2_8: GATE_TR },
+	__2_7: { __2_5: GATE_BL, __2_8: GATE_TR },
+	__2_8: { __2_6: GATE_BL, __2_7: GATE_BR },
+	__3_5: { __4_4: GATE_TL, __4_5: GATE_TRO, __3_6: GATE_BL, __3_7: GATE_BR },
+	__3_6: { __3_5: GATE_TL, __3_8: GATE_BR },
+	__3_7: { __3_5: GATE_BL, __3_8: GATE_BR },
+	__3_8: { __3_6: GATE_BL, __3_7: GATE_TL }
+}
+
 var OPTIMISTIC_ACCELERATION_TIME_IN_MS = 500;
 var SAFE_ACCELERATION_TIME_IN_MS = 2000;
 var JUMP_TIMEOUT_IN_MS = 5000;
