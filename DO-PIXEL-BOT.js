@@ -620,10 +620,11 @@ Navigator.prototype.travelTo = function(dest_coords) {
 }
 
 Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
-	var start_time = new Date().getTime();
+	var timer = new Timer();
+	timer.start();
 
 	while (this.shipIsMoving()) {
-		if (start_time >= (new Date()).getTime() + max_flight_time_in_ms) {
+		if (timer.hasExpired(max_flight_time_in_ms)) {
 			return false; // max flight time reached
 		}
 
@@ -989,10 +990,6 @@ PET.prototype.manage = function() {
 	}
 }
 
-function shouldCheckPet(last_pet_check) {
-	return (new Date()).getTime() > last_pet_check + CONFIG_PET_CHECK_TIMEOUT_IN_MS;
-}
-
 // +---------------------+
 // | Bonusbox Collection |
 // +---------------------+
@@ -1102,9 +1099,13 @@ function main() {
 	var just_collected_something = false;
 
 	// Things to check from time to time.
-	var last_general_check = new Date();
-	var last_pet_check = new Date();
-	var movement_timer = new Date();
+	var last_general_check = new Timer();
+	var last_pet_check = new Timer();
+	var movement_timer = new Timer();
+
+	last_general_check.start();
+	last_pet_check.start();
+	movement_timer.start();
 
 	// +------------------------------+
 	// | Prepare the client and login |
@@ -1186,11 +1187,11 @@ function main() {
 		// | Do general checks |
 		// +-------------------+
 
-		if (general_checks_urgend || last_general_check.getTime() > (new Date()).getTime() + GENERAL_CHECK_TIMEOUT_IN_MS) {
+		if (general_checks_urgend || last_general_check.hasExpired(GENERAL_CHECK_TIMEOUT_IN_MS)) {
 
 			// Reset genereal checks triggers
 			general_checks_urgend = false;
-			last_general_check = new Date();
+			last_general_check.restart();
 
 			// Reconnect, if disconnected and auto-reconnect is enabled
 			if (client.isDisconnected()) {
@@ -1234,11 +1235,11 @@ function main() {
 			}
 
 			// Make sure the pet is working correctly
-			if (CONFIG_USE_PET && (!pet_checked_after_death || shouldCheckPet(last_pet_check))) {
+			if (CONFIG_USE_PET && (!pet_checked_after_death || last_pet_check.hasExpired(CONFIG_PET_CHECK_TIMEOUT_IN_MS))) {
 				Helper.log("Time to check the PET...");
 				pet.manage();
 				pet_checked_after_death = true;
-				last_pet_check = new Date();
+				last_pet_check.restart();
 			}
 		}
 
@@ -1257,12 +1258,15 @@ function main() {
 		// | Local navigation |
 		// +------------------+
 
-		var time_to_check_navi = (new Date()).getTime() > (movement_timer.getTime() + 3000); // We didn't check for 3 seconds
+		// We need to check whether we're not moving every 3 seconds.
+		// Otherwise the bonus box collector may accidently log the user out
+		// after the logout button has been clicked to make the ship stop moving.
+		var time_to_check_navi = movement_timer.hasExpired(3000);
 
 		if (just_tried_to_collect_something || (time_to_check_navi && !navi.shipIsMoving())) {
 
-			// Reset the movement timer
-			movement_timer = new Date();
+			// Restart the movement timer
+			movement_timer.restart();
 
 			// Move
 			Helper.log("Flying to a random location on the current map...");
