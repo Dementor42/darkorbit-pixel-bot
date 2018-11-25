@@ -484,14 +484,8 @@ var Navigator = function(minimap) {
 	this.minimap = minimap;
 }
 
-Navigator.prototype.getRandomCoords = function() {
-	return this.minimap.getInnerRect().randomPoint();
-}
-
 Navigator.prototype.getNextDestination = function() {
-	var destination = this.getRandomCoords();
-	var imm = this.minimap.getInnerRect();
-	return imm.getTopLeft().pointAdded(destination);
+	return this.minimap.getInnerRect().randomPoint();
 }
 
 Navigator.prototype.shipIsMoving = function() {
