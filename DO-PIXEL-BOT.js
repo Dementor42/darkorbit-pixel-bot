@@ -352,7 +352,7 @@ function getClosestMatch(matches) {
 // +--------------------------+
 
 var Minimap = function() {
-	this.cached_level = -1;
+	this.cached_level = undefined;
 	this.cached_position = new Point(-1, -1);
 	this.cached_intern_mapname = undefined;
 };
@@ -372,7 +372,7 @@ Minimap.prototype.calculateTelemetry = function(screenshot) {
 };
 
 Minimap.prototype.getLevel = function(ignore_cache) {
-	if (ignore_cache === true || this.cached_level == -1) {
+	if (ignore_cache === true || this.cached_level === undefined) {
 		var screenshot = Browser.takeScreenshot();
 		this.calculateTelemetry(screenshot);
 	}
@@ -482,22 +482,16 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 
 var Navigator = function(minimap) {
 	this.minimap = minimap;
-	this.omm = minimap.getOuterRect();
-	this.imm = minimap.getInnerRect();
 }
 
 Navigator.prototype.getRandomCoords = function() {
-	return new Point(
-		Math.random() * (this.imm.getWidth() - 0) + 0,
-		Math.random() * (this.imm.getHeight() - 0) + 0
-	);
+	return this.minimap.getInnerRect().randomPoint();
 }
 
 Navigator.prototype.getNextDestination = function() {
 	var destination = this.getRandomCoords();
-	var dest_real_x = this.imm.getLeft() + destination.getX();
-	var dest_real_y = this.imm.getTop() + destination.getY();
-	return new Point(dest_real_x, dest_real_y);
+	var imm = this.minimap.getInnerRect();
+	return imm.getTopLeft().pointAdded(destination);
 }
 
 Navigator.prototype.shipIsMoving = function() {
@@ -1165,7 +1159,19 @@ function main() {
 	// | Find and measure the minimap |
 	// +------------------------------+	
 
-	if (minimap.getLevel() === -1) {
+	for (var tries = 1; tries <= 4; tries++) {
+		Helper.debug(tries, "time trying to find the minimap on startup.");
+		
+		if (minimap.getLevel() !== undefined) {
+			Helper.debug("Minimap found on", tries, "try");
+			break;
+		}
+
+		Helper.log("Minimap not found", tries, "out of 4 tries. Trying again after 3 seconds");
+		Helper.sleep(3); // Try in 3 seconds again
+	}
+
+	if (minimap.getLevel() === undefined) {
 		Helper.log("FATAL! The bot was unable to find the ingame Minimap. Stopping now.")
 		return;
 	}
