@@ -505,6 +505,11 @@ Navigator.prototype.shipIsMoving = function() {
 
 Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 	var current_intern_mapname = this.minimap.getInternMapname();
+
+	if (current_intern_mapname == "") {
+		Helper.debug("Current map unknown (navigateToMap)");
+		return;
+	}
 	
 	if (current_intern_mapname === dest_intern_mapname) {
 		Helper.log("We are already on the destination map.");
@@ -1079,8 +1084,9 @@ Collector.prototype.collectLoot = function() {
 // | Task Scheduler |
 // +----------------+
 
-var Scheduler = function(client, pet, collector, navi) {
+var Scheduler = function(client, minimap, pet, collector, navi) {
 	this.client = client;
+	this.minimap = minimap;
 	this.pet = pet;
 	this.collector = collector;
 	this.navi = navi;
@@ -1207,8 +1213,15 @@ Scheduler.prototype.checkTheShipStatus = function() {
 }
 
 Scheduler.prototype.checkTheCurrentMap = function() {
-	this.navi.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
-	this.doneMapChecking();
+	var dest_intern_mapname = convertExternToInternMapname(CONFIG_MAP);
+	this.navi.navigateToMap(dest_intern_mapname);
+
+	if (this.minimap.getInternMapname() === dest_intern_mapname) {
+		Helper.debug("We're on the correct map. Map check done.");
+		this.doneMapChecking();
+	} else {
+		Helper.debug("Map check not done.");
+	}
 }
 
 Scheduler.prototype.checkThePET = function() {
@@ -1273,10 +1286,6 @@ Scheduler.prototype.runMainAlgorithm = function() {
 
 	Helper.debug("The scheduler returned.");
 }
-
-
-
-
 
 // +---------------------------------------------------------------+
 // | Main Method and Algorithm, this uses everything defined above |
@@ -1376,7 +1385,7 @@ function main() {
 	// +-------------------------------------+
 	
 	Helper.log("Starting to bot.");
-	var scheduler = new Scheduler(client, pet, collector, navi);
+	var scheduler = new Scheduler(client, minimap, pet, collector, navi);
 	scheduler.runMainAlgorithm();
 }
 
