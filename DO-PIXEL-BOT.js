@@ -331,6 +331,11 @@ function moveMouseToCenter() {
 	Browser.moveMouseTo(Browser.getRect().getCenter());
 }
 
+function leftClickAndPreventHover(point) {
+	Browser.leftClick(point);
+	moveMouseToCenter();
+}
+
 function getClosestMatch(matches) {
 	var closest_match = new Match();
 	var center = Browser.getRect().getCenter();
@@ -871,7 +876,7 @@ PET.prototype.clickButton = function(btn_tpl, min_score) {
 		var in_window_pos = btn_match.getRect().getCenter();
 		var real_coords = this.relativeToRealCoords(in_window_pos);
 
-		Browser.leftClick(real_coords);
+		leftClickAndPreventHover(real_coords);
 		Helper.sleep(1);
 
 		moveMouseToCenter();
@@ -962,7 +967,7 @@ PET.prototype.selectGear = function(gear_name) {
 	var in_window_pos = gear_entry_match.getRect().getCenter();
 	var real_coords = this.relativeToRealCoords(in_window_pos);
 
-	Browser.leftClick(real_coords);
+	leftClickAndPreventHover(real_coords);
 	Helper.log("Gear selected:", gear_name);
 
 	Helper.sleep(1);
