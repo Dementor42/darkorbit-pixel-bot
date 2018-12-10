@@ -1064,7 +1064,7 @@ Collector.prototype.collectLoot = function() {
 
 		if (!this.navi.monitorQuickFlight(10 * 1000)) {
 			Helper.debug("It took longer than 10 seconds to reach the loot. Something might went wrong.");
-			return false;
+			return true;
 		}
 
 		Helper.log("Just collected something, looking for more...");
@@ -1072,8 +1072,211 @@ Collector.prototype.collectLoot = function() {
 	}
 
 	Helper.debug("Finding more than 20 collectable in one spot is unlikely. We might be stuck somehow.");
-	return false;
+	return true;
 }
+
+// +----------------+
+// | Task Scheduler |
+// +----------------+
+
+var Scheduler = function(client, pet, collector, navi) {
+	this.client = client;
+	this.pet = pet;
+	this.collector = collector;
+	this.navi = navi;
+
+	this.just_collected_something = false;
+	this.script_stop_requested = false;
+
+	this.client_check_requested = true; // true => check on startup
+	this.pet_check_requested = true; // true => check on startup
+	this.map_check_requested = true; // true => check on startup
+
+	this.client_check_timer = new Timer();
+	this.pet_check_timer = new Timer();
+
+	this.client_check_timer.start();
+	this.pet_check_timer.start();
+}
+
+Scheduler.prototype.requestScriptStop = function() {
+	this.script_stop_requested = true;
+}
+
+Scheduler.prototype.requestClientCheck = function() {
+	this.client_check_requested = true;
+}
+
+Scheduler.prototype.requestPetCheck = function() {
+	this.pet_check_requested = true;
+}
+
+Scheduler.prototype.requestMapCheck = function() {
+	this.map_check_requested = true;
+}
+
+Scheduler.prototype.doneClientChecking = function() {
+	this.client_check_requested = false;
+	this.client_check_timer.restart();
+}
+
+Scheduler.prototype.donePetChecking = function() {
+	this.pet_check_requested = false;
+	this.pet_check_timer.restart();
+}
+
+Scheduler.prototype.doneMapChecking = function() {
+	this.map_check_requested = false;
+}
+
+Scheduler.prototype.itsTimeToCheckTheClient = function() {
+	var good_idea = !this.just_collected_something;
+	var necessary = this.client_check_requested || this.client_check_timer.hasExpired(GENERAL_CHECK_TIMEOUT_IN_MS);
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimeToCheckThePET = function() {
+	var good_idea = !this.just_collected_something && CONFIG_USE_PET;
+	var necessary = this.pet_check_requested || this.pet_check_timer.hasExpired(CONFIG_PET_CHECK_TIMEOUT_IN_MS);
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimeToCheckTheMap = function() {
+	var good_idea = !this.just_collected_something && CONFIG_USE_GLOBAL_NAV;
+	var necessary = this.map_check_requested;
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimeToCollectLoot = function() {
+	var good_idea = CONFIG_COLLECT_LOOT;
+	var necessary = good_idea;
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimeToMoveTheShip = function() {
+	var good_idea = this.just_collected_something || !this.navi.shipIsMoving();
+	var necessary = good_idea;
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.checkTheConnection = function() {
+	if (!this.client.isDisconnected()) {
+		Helper.debug("Client is connected; check done.");
+		return;
+	}
+	
+	Helper.log("Client disconnected.");
+
+	if (!CONFIG_AUTO_RECONNECT) {
+		Helper.log("Auto-reconnect disabled. Stopping the script...");
+		this.requestScriptStop();
+		return;
+	}
+
+	Helper.log("Trying to reconnect...");
+	this.client.reconnect();
+}
+
+Scheduler.prototype.checkTheShipStatus = function() {
+	if (!this.client.isDestroyed()) {
+		Helper.debug("Client is alive; check done.");
+		return;
+	}
+
+	Helper.log("Ship destroyed.");
+
+	if (!CONFIG_AUTO_SHIP_REPAIR) {
+		Helper.log("Auto-ship-repair disabled. Stopping the script...");
+		this.requestScriptStop();
+		return;
+	}
+
+	if (this.client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
+		Helper.log("Max configured ship repairs reached. Stopping...");
+		this.requestScriptStop();
+		return;
+	}
+
+	Helper.log("Trying to repair the ship...");
+	this.client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
+
+	Helper.sleep(2); // Wait for the revive animation to finish
+
+	this.requestMapCheck();
+	this.requestPetCheck();
+}
+
+Scheduler.prototype.checkTheCurrentMap = function() {
+	this.navi.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
+	this.doneMapChecking();
+}
+
+Scheduler.prototype.checkThePET = function() {
+	this.pet.manage();
+	this.donePetChecking();
+}
+
+Scheduler.prototype.checkForLoot = function() {
+	this.just_collected_something = this.collector.collectLoot();
+	Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
+}
+
+Scheduler.prototype.moveTheShip = function() {
+	Helper.log("Flying to a random location on the current map...");
+	Browser.leftClick(this.navi.getNextDestination());
+}
+
+Scheduler.prototype.runMainAlgorithm = function() {
+
+	while (!this.script_stop_requested) {
+
+		if (this.itsTimeToCheckTheClient()) {
+			Helper.debug("Time to check the client...");
+
+			// Reconnect, if disconnected and auto-reconnect is enabled
+			this.checkTheConnection();
+			if (this.script_stop_requested) return;
+
+			// Repair the ship, if destroyed and auto repair is enabled
+			this.checkTheShipStatus();
+			if (this.script_stop_requested) return;
+			
+			// Reset check triggers
+			this.doneClientChecking();
+		}
+
+		if (this.itsTimeToCheckTheMap()) {
+			Helper.debug("Time to check whether we're on the correct map.");
+			this.checkTheCurrentMap();
+		}
+		
+		if (this.itsTimeToCheckThePET()) {
+			Helper.debug("Time to check the PET...");
+			this.checkThePET();
+		}
+		
+		if (this.itsTimeToCollectLoot()) {
+			Helper.debug("Time to check for loot...");
+			this.checkForLoot();
+		}
+		
+		if (this.itsTimeToMoveTheShip()) {
+			Helper.debug("Time to move the ship...");
+			this.moveTheShip();
+		}
+		
+		else if (!CONFIG_COLLECT_LOOT) {
+			// Sleep if we're moving and not looking for loot
+			Helper.sleep(2);
+		}
+	}
+
+	Helper.debug("The scheduler returned.");
+}
+
+
+
+
 
 // +---------------------------------------------------------------+
 // | Main Method and Algorithm, this uses everything defined above |
@@ -1088,25 +1291,6 @@ function main() {
 	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###");
 	Helper.log("Used script version:", SCRIPT_VERSION, "(You have to check for updates manually)");
 	var client = new Client();
-
-	// +----------------------------+
-	// | Timers, counters and flags |
-	// +----------------------------+
-
-	var map_checked_after_death = false; // false => check on startup
-	var pet_checked_after_death = false; // false => check on startup
-
-	var general_checks_urgend = true; // true => check on startup
-	var just_collected_something = false;
-
-	// Things to check from time to time.
-	var last_general_check = new Timer();
-	var last_pet_check = new Timer();
-	var movement_timer = new Timer();
-
-	last_general_check.start();
-	last_pet_check.start();
-	movement_timer.start();
 
 	// +------------------------------+
 	// | Prepare the client and login |
@@ -1192,107 +1376,8 @@ function main() {
 	// +-------------------------------------+
 	
 	Helper.log("Starting to bot.");
-
-	// The main loop playing the game until the user stops the script
-	while (true) {
-
-		// +-------------------+
-		// | Do general checks |
-		// +-------------------+
-
-		if (general_checks_urgend || last_general_check.hasExpired(GENERAL_CHECK_TIMEOUT_IN_MS)) {
-
-			// Reset genereal checks triggers
-			general_checks_urgend = false;
-			last_general_check.restart();
-
-			// Reconnect, if disconnected and auto-reconnect is enabled
-			if (client.isDisconnected()) {
-				Helper.log("Client disconnected.");
-
-				if (!CONFIG_AUTO_RECONNECT) {
-					Helper.log("Auto-reconnect disabled. Stopping the script...");
-					return;
-				}
-
-				Helper.log("Trying to reconnect...");
-				client.reconnect();
-			}
-
-			// Repair the ship, if destroyed and auto repair is enabled
-			if (client.isDestroyed()) {
-				Helper.log("Ship destroyed.");
-
-				if (!CONFIG_AUTO_SHIP_REPAIR) {
-					Helper.log("Auto-ship-repair disabled. Stopping the script...");
-					return;
-				}
-
-				if (client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
-					Helper.log("Max configured ship repairs reached. Stopping...");
-					return;
-				}
-
-				Helper.log("Trying to repair the ship...");
-				client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
-
-				Helper.sleep(2);
-				map_checked_after_death = false;
-				pet_checked_after_death = false;
-			}
-
-			// Make sure the bot is on the configured map
-			if (!map_checked_after_death && CONFIG_USE_GLOBAL_NAV) {
-				Helper.debug("Time to check whether we're on the correct map.");
-				navi.navigateToMap(convertExternToInternMapname(CONFIG_MAP));
-				map_checked_after_death = true;
-			}
-
-			// Make sure the pet is working correctly
-			if (CONFIG_USE_PET && (!pet_checked_after_death || last_pet_check.hasExpired(CONFIG_PET_CHECK_TIMEOUT_IN_MS))) {
-				Helper.log("Time to check the PET...");
-				pet.manage();
-				pet_checked_after_death = true;
-				last_pet_check.restart();
-			}
-		}
-
-		// +--------------+
-		// | Collect loot |
-		// +--------------+
-
-		var just_tried_to_collect_something = false;
-
-		if (CONFIG_COLLECT_LOOT) {
-			just_tried_to_collect_something = collector.collectLoot();
-			Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
-		}
-
-		// +------------------+
-		// | Local navigation |
-		// +------------------+
-
-		// We need to check whether we're not moving every 3 seconds.
-		// Otherwise the bonus box collector may accidently log the user out
-		// after the logout button has been clicked to make the ship stop moving.
-		var time_to_check_navi = movement_timer.hasExpired(3000);
-
-		if (just_tried_to_collect_something || (time_to_check_navi && !navi.shipIsMoving())) {
-
-			// Restart the movement timer
-			movement_timer.restart();
-
-			// Move
-			Helper.log("Flying to a random location on the current map...");
-			Browser.leftClick(navi.getNextDestination());
-			continue;
-		}
-
-		// Sleep if we're moving and not collecting
-		else if (!CONFIG_COLLECT_LOOT) {
-			Helper.sleep(2);
-		}
-	}
+	var scheduler = new Scheduler(client, pet, collector, navi);
+	scheduler.runMainAlgorithm();
 }
 
 main();
