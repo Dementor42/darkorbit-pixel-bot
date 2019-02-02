@@ -1,28 +1,3 @@
-// +-------------------------------------------+
-// | User Configuration (feel free to edit it) |
-// +-------------------------------------------+
-
-var CONFIG_USE_AUTO_LOGIN = false;
-var CONFIG_AUTO_LOGIN_USERNAME = "";
-var CONFIG_AUTO_LOGIN_PASSWORD = "";
-
-var CONFIG_AUTO_RECONNECT = true;
-
-var CONFIG_AUTO_SHIP_REPAIR = true;
-var CONFIG_AUTO_SHIP_REPAIR_LOCATION = "base"; // Possible locations: "stage", "gate", "base"
-var CONFIG_MAX_SHIP_REPAIRS = 20; // The script will stop once they have been reached.
-
-var CONFIG_USE_PET = false;
-var CONFIG_MAX_PET_REPAIRS = 20;
-var CONFIG_PET_GEAR_TO_USE = "autolooter"; // Allowed values: "autolooter", "collector", "passivemode", "guardmode"
-var CONFIG_PET_CHECK_TIMEOUT_IN_MS = 5 * 60 * 1000; // minutes * seconds * milliseconds
-
-var CONFIG_USE_GLOBAL_NAV = false;
-var CONFIG_MAP = "4-1";
-
-var CONFIG_COLLECT_LOOT = true; // Works only in 2D mode
-var CONFIG_COLLECTOR_TIMEOUT_IN_MS = 200; // Increase to reduce CPU/GPU usage, lower to miss less loot.
-
 // +---------------------------------------------------------------------+
 // | Templates and Data (DON'T TOUCH ANYTHING BELOW THIS LINE AS A USER) |
 // +---------------------------------------------------------------------+
@@ -979,7 +954,7 @@ PET.prototype.manage = function() {
 	if (this.isDestroyed()) {
 		Helper.log("The PET is destroyed!");
 
-		if (this.numRevivesDone() >= CONFIG_MAX_PET_REPAIRS) {
+		if (this.numRevivesDone() >= Config.getValue("max_pet_repairs")) {
 			Helper.log("Max PET repairs already reached.");
 			return;
 		}
@@ -993,13 +968,13 @@ PET.prototype.manage = function() {
 		Helper.log("PET activated!");
 	}
 
-	if (this.selectedGear() != CONFIG_PET_GEAR_TO_USE) {
+	if (this.selectedGear() != Config.getValue("pet_gear")) {
 		Helper.log("The wrong PET gear is selected.");
 
-		if (this.selectGear(CONFIG_PET_GEAR_TO_USE)) {
+		if (this.selectGear(Config.getValue("pet_gear"))) {
 			Helper.log("Correct PET gear selected");
 		} else {
-			Helper.log("Couldn't select the PET gear:", CONFIG_PET_GEAR_TO_USE);
+			Helper.log("Couldn't select the PET gear:", Config.getValue("pet_gear"));
 		}
 	}
 }
@@ -1079,7 +1054,7 @@ Collector.prototype.collectLoot = function() {
 		}
 
 		Helper.log("Just collected something, looking for more...");
-		Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
+		Helper.msleep(Config.getValue("collector_timeout_in_ms"));
 	}
 
 	Helper.debug("Finding more than 20 collectable in one spot is unlikely. We might be stuck somehow.");
@@ -1148,19 +1123,19 @@ Scheduler.prototype.itsTimeToCheckTheClient = function() {
 }
 
 Scheduler.prototype.itsTimeToCheckThePET = function() {
-	var good_idea = !this.just_collected_something && CONFIG_USE_PET;
-	var necessary = this.pet_check_requested || this.pet_check_timer.hasExpired(CONFIG_PET_CHECK_TIMEOUT_IN_MS);
+	var good_idea = !this.just_collected_something && Config.getValue("manage_pet");
+	var necessary = this.pet_check_requested || this.pet_check_timer.hasExpired(Config.getValue("pet_check_timeout_in_min") * 60 * 1000);
 	return good_idea && necessary;
 }
 
 Scheduler.prototype.itsTimeToCheckTheMap = function() {
-	var good_idea = !this.just_collected_something && CONFIG_USE_GLOBAL_NAV;
+	var good_idea = !this.just_collected_something && Config.getValue("do_global_nav");
 	var necessary = this.map_check_requested;
 	return good_idea && necessary;
 }
 
 Scheduler.prototype.itsTimeToCollectLoot = function() {
-	var good_idea = CONFIG_COLLECT_LOOT;
+	var good_idea = Config.getValue("collect_loot");
 	var necessary = good_idea;
 	return good_idea && necessary;
 }
@@ -1179,7 +1154,7 @@ Scheduler.prototype.checkTheConnection = function() {
 	
 	Helper.log("Client disconnected.");
 
-	if (!CONFIG_AUTO_RECONNECT) {
+	if (!Config.getValue("auto_reconnect")) {
 		Helper.log("Auto-reconnect disabled. Stopping the script...");
 		this.requestScriptStop();
 		return;
@@ -1197,20 +1172,20 @@ Scheduler.prototype.checkTheShipStatus = function() {
 
 	Helper.log("Ship destroyed.");
 
-	if (!CONFIG_AUTO_SHIP_REPAIR) {
+	if (!Config.getValue("auto_ship_repair")) {
 		Helper.log("Auto-ship-repair disabled. Stopping the script...");
 		this.requestScriptStop();
 		return;
 	}
 
-	if (this.client.numRevivesDone() >= CONFIG_MAX_SHIP_REPAIRS) {
+	if (this.client.numRevivesDone() >= Config.getValue("max_auto_ship_repairs")) {
 		Helper.log("Max configured ship repairs reached. Stopping...");
 		this.requestScriptStop();
 		return;
 	}
 
 	Helper.log("Trying to repair the ship...");
-	this.client.revive(CONFIG_AUTO_SHIP_REPAIR_LOCATION);
+	this.client.revive(Config.getValue("auto_ship_repair_location"));
 
 	Helper.sleep(2); // Wait for the revive animation to finish
 
@@ -1219,7 +1194,7 @@ Scheduler.prototype.checkTheShipStatus = function() {
 }
 
 Scheduler.prototype.checkTheCurrentMap = function() {
-	var dest_intern_mapname = convertExternToInternMapname(CONFIG_MAP);
+	var dest_intern_mapname = convertExternToInternMapname(Config.getValue("map"));
 	this.navi.navigateToMap(dest_intern_mapname);
 
 	if (this.minimap.getInternMapname() === dest_intern_mapname) {
@@ -1237,7 +1212,7 @@ Scheduler.prototype.checkThePET = function() {
 
 Scheduler.prototype.checkForLoot = function() {
 	this.just_collected_something = this.collector.collectLoot();
-	Helper.msleep(CONFIG_COLLECTOR_TIMEOUT_IN_MS);
+	Helper.msleep(Config.getValue("collector_timeout_in_ms"));
 }
 
 Scheduler.prototype.moveTheShip = function() {
@@ -1284,7 +1259,7 @@ Scheduler.prototype.runMainAlgorithm = function() {
 			this.moveTheShip();
 		}
 		
-		else if (!CONFIG_COLLECT_LOOT) {
+		else if (!Config.getValue("collect_loot")) {
 			// Sleep if we're moving and not looking for loot
 			Helper.sleep(2);
 		}
@@ -1311,15 +1286,15 @@ function main() {
 	// | Prepare the client and login |
 	// +------------------------------+
 
-	if (CONFIG_COLLECT_LOOT) {
+	if (Config.getValue("collect_loot")) {
 		client.modifyResources2D();
 		Helper.log("REMEMBER: The loot collector currently only works in 2D mode.");
 	}
 
 	if (!client.isIngame()) {
-		if (CONFIG_USE_AUTO_LOGIN) {
+		if (Config.getValue("auto_login")) {
 			Helper.log("Logging in automatically");
-			client.autoLogin(CONFIG_AUTO_LOGIN_USERNAME, CONFIG_AUTO_LOGIN_PASSWORD);
+			client.autoLogin(Config.getValue("auto_login_username"), Config.getValue("auto_login_password"));
 			Helper.log("Logged in automatically.");
 		} else {
 			Helper.log("### ! ! ! Please login manually and start the game or configure the auto login feature ! ! ! ###");
@@ -1327,7 +1302,7 @@ function main() {
 		}
 	}
 
-	else if (CONFIG_COLLECT_LOOT) {
+	else if (Config.getValue("collect_loot")) {
 		// The client is already ingame. Reload to make sure ressource modification works.
 		Helper.log("Reloading to make the loot collector work...");
 
@@ -1381,7 +1356,7 @@ function main() {
 	// | Find and measure the PET window |
 	// +---------------------------------+
 
-	if (CONFIG_USE_PET && !pet.findWindow()) {
+	if (Config.getValue("manage_pet") && !pet.findWindow()) {
 		Helper.log("FATAL! The bot was unable to find the PET window. Stopping now.");
 		return;
 	}

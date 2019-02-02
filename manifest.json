@@ -1,0 +1,176 @@
+{
+	"manifest_version": 1,
+	"script": "DO-PIXEL-BOT.js",
+	"config": {
+		"groups": [
+			{
+				"name": "Auto Login",
+				"options": [
+					{
+						"id": "auto_login",
+						"type": "boolean",
+						"label": "Auto. login using the provided credentials",
+						"default": false
+					},
+					{
+						"id": "auto_login_username",
+						"type": "string",
+						"label": "DarkOrbit username for autologin"
+					},
+					{
+						"id": "auto_login_password",
+						"type": "password",
+						"label": "DarkOrbit password for autologin"
+					}
+				]
+			},
+			{
+				"name": "Ship repair",
+				"options": [
+					{
+						"id": "auto_reconnect",
+						"type": "boolean",
+						"label": "Auto. reconnect on connection loss",
+						"default": true
+					},
+					{
+						"id": "auto_ship_repair",
+						"type": "boolean",
+						"label": "Auto. repair the ship when destroyed"
+					},
+					{
+						"id": "auto_ship_repair_location",
+						"type": "choice",
+						"label":  "Auth. ship repair location",
+						"default": "base",
+						"choices": {
+							"Company base": "base",
+							"Nearest gate": "gate",
+							"Last location ": "stage"
+						}
+					},
+					{
+						"id": "max_auto_ship_repairs",
+						"type": "integer",
+						"label": "Max. auto. ship repairs",
+						"min": 1,
+						"max": 100,
+						"default": 20
+					}
+				]
+			},
+			{
+				"name": "PET",
+				"options": [
+					{
+						"id": "manage_pet",
+						"type": "boolean",
+						"label": "Use the PET drone",
+						"default": false
+					},
+					{
+						"id": "max_pet_repairs",
+						"type": "integer",
+						"label": "Max. PET repairs",
+						"min": 0,
+						"max": 100,
+						"default": 20
+					},
+					{
+						"id": "pet_gear",
+						"type": "choice",
+						"label": "PET gear to use",
+						"default": "autolooter",
+						"choices": {
+							"Autolooter gear": "autolooter",
+							"Collector gear": "collector",
+							"Passivemode": "passivemode",
+							"Guardmode": "guardmode"
+						}
+					}
+
+				]
+			},
+			{
+				"name": "Navigation",
+				"options": [
+					{
+						"id": "do_global_nav",
+						"type": "boolean",
+						"label": "Always fly to the selected map",
+						"default": false
+					},
+					{
+						"id": "map",
+						"type": "choice",
+						"label": "Map",
+						"default": "4-1",
+						"choices": {
+							"1-1": "1-1",
+							"1-2": "1-2",
+							"1-3": "1-3",
+							"1-4": "1-4",
+							"1-5": "1-5",
+							"1-6": "1-6",
+							"1-7": "1-7",
+							"1-8": "1-8",
+							"2-1": "2-1",
+							"2-2": "2-2",
+							"2-3": "2-3",
+							"2-4": "2-4",
+							"2-5": "2-5",
+							"2-6": "2-6",
+							"2-7": "2-7",
+							"2-8": "2-8",
+							"3-1": "3-1",
+							"3-2": "3-2",
+							"3-3": "3-3",
+							"3-4": "3-4",
+							"3-5": "3-5",
+							"3-6": "3-6",
+							"3-7": "3-7",
+							"3-8": "3-8",
+							"4-1": "4-1",
+							"4-2": "4-2",
+							"4-3": "4-3",
+							"4-4": "4-4",
+							"4-5": "4-5"
+						}
+					}
+				]
+			},
+			{
+				"name": "Loot collector",
+				"options": [
+					{
+						"id": "collect_loot",
+						"type": "boolean",
+						"label": "Auto. collect bonus boxes (Requires 2D mode!)",
+						"default": true
+					}
+				]
+			},
+			{
+				"name": "Advanced (be carefull)",
+				"options": [
+					{
+						"id": "pet_check_timeout_in_min",
+						"type": "integer",
+						"label": "Check the PET every X minutes",
+						"default": 5,
+						"min": 1,
+						"max": 30
+					},
+					{
+						"id": "collector_timeout_in_ms",
+						"type": "integer",
+						"label": "Timeout after looking for a bonusbox in ms",
+						"default": 200,
+						"min": 50,
+						"max": 2000
+					}
+				]
+			}
+		]
+	}
+}
