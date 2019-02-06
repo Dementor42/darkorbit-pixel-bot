@@ -520,10 +520,10 @@ Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 		var waypoint = route[i];
 
 		var ex_wp = convertInternToExternMapname(waypoint);
-		Helper.log("Trying to navigate to", ex_wp);
+		Helper.log("Trying to navigate and jump to", ex_wp);
 
 		if (!this.jumpTo(waypoint)) {
-			Helper.log("Unable to navigate to", ex_wp);
+			Helper.log("Navigating and jumping to", ex_wp, "failed");
 			return;
 		}
 	}
@@ -531,13 +531,17 @@ Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 
 Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 	var current_intern_mapname = this.minimap.getInternMapname(false); // Do not use the cached mapname
-	var mm_level = this.minimap.getLevel(false); // Do not use the cached level
+	var mm_level = this.minimap.getLevel(true); // Use the cached level
+	var dest_jgate_arr;
 	
-	if (mm_level == -1 || current_intern_mapname === "") {
+	try {
+		dest_jgate_arr = JGATE_POS[current_intern_mapname][dest_intern_mapname][mm_level];		
+	} catch (err) {
+		Helper.debug("Getting the JGATE pos for", current_intern_mapname, dest_intern_mapname, mm_level, "failed");
+		Helper.debug("^", err);
 		return false;
 	}
 
-	var dest_jgate_arr = JGATE_POS[current_intern_mapname][dest_intern_mapname][mm_level];
 	var dest_jgate_pos = new Point(dest_jgate_arr[0], dest_jgate_arr[1]);
 
 	var rdm = convertInternToExternMapname(dest_intern_mapname);
