@@ -49,8 +49,6 @@ var LOOT_MIN_HSV = new Color(55, 200, 200, "hsv");
 var LOOT_MAX_HSV = new Color(70, 255, 255, "hsv");
 var LOOT_BLOB_TPL = new BlobTpl(1200, 1220);
 
-var GENERAL_CHECK_TIMEOUT_IN_MS = 1000 * 60 * 3; // Check every 3 minutes
-
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
 var MM_LEVEL_3_TPL = new Image(MM_LEVEL_DIR + "3_tpl.png");
@@ -1127,7 +1125,7 @@ Scheduler.prototype.doneMapChecking = function() {
 
 Scheduler.prototype.itsTimeToCheckTheClient = function() {
 	var good_idea = !this.just_collected_something;
-	var necessary = this.client_check_requested || this.client_check_timer.hasExpired(GENERAL_CHECK_TIMEOUT_IN_MS);
+	var necessary = this.client_check_requested || this.client_check_timer.hasExpired(Config.getValue("general_check_timeout_in_min") * 60 * 1000);
 	return good_idea && necessary;
 }
 

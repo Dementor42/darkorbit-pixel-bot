@@ -161,6 +161,14 @@
 				"name": "Advanced (be carefull)",
 				"options": [
 					{
+						"id": "general_check_timeout_in_min",
+						"type": "integer",
+						"label": "Connection and ship status check timeout in minutes",
+						"default": 3,
+						"min": 1,
+						"max": 10
+					}
+					{
 						"id": "pet_check_timeout_in_min",
 						"type": "integer",
 						"label": "Check the PET every X minutes",
