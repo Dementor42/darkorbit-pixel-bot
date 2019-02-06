@@ -36,7 +36,8 @@
 					{
 						"id": "auto_ship_repair",
 						"type": "boolean",
-						"label": "Auto. repair the ship when destroyed"
+						"label": "Auto. repair the ship when destroyed",
+						"default": true
 					},
 					{
 						"id": "auto_ship_repair_location",
