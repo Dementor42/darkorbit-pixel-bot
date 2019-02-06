@@ -69,6 +69,12 @@
 						"default": false
 					},
 					{
+						"id": "auto_pet_revive",
+						"type": "boolean",
+						"label": "Auto. repair/revive the PET",
+						"default": false
+					},
+					{
 						"id": "max_pet_repairs",
 						"type": "integer",
 						"label": "Max. PET repairs",

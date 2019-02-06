@@ -958,6 +958,11 @@ PET.prototype.manage = function() {
 	if (this.isDestroyed()) {
 		Helper.log("The PET is destroyed!");
 
+		if (!Config.getValue("auto_pet_revive")) {
+			Helper.log("PET repair not allowed.");
+			return;
+		}
+
 		if (this.numRevivesDone() >= Config.getValue("max_pet_repairs")) {
 			Helper.log("Max PET repairs already reached.");
 			return;
