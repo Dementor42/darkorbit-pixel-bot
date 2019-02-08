@@ -460,10 +460,31 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 
 var Navigator = function(minimap) {
 	this.minimap = minimap;
+	this.last_random_location = new Point();
 }
 
-Navigator.prototype.getNextDestination = function() {
-	return this.minimap.getInnerRect().randomPoint();
+Navigator.prototype.generateRandomLocation = function() {
+	// Make sure we're not to close to our last random location.
+	// That could cause issue in the edge case where we expect the
+	// ship navigation to cancel the logout process but it doesn't
+	// because we clicked our current minimap location again which
+	// would not cause our ship to move.
+	var random_location = this.minimap.getInnerRect().randomPoint();
+	for (var i = 0; i < 20; i++) {
+		if (Math.abs(this.last_random_location.getX() - random_location.getX()) < 3 ||
+			Math.abs(this.last_random_location.getY() - random_location.getY()) < 3) {
+			continue;
+		}
+		this.last_random_location = random_location;
+		return random_location;
+	}
+	Helper.debug("The bot was unable to generate a random location within 20 tries. WTF?!");
+	return random_location; // Return the last generated location anyway
+}
+
+Navigator.prototype.flyToRandomLocation = function() {
+	var random_location = this.generateRandomLocation();
+	Browser.leftClick(random_location);
 }
 
 Navigator.prototype.shipIsMoving = function() {
@@ -1040,14 +1061,36 @@ Collector.prototype.collectLoot = function() {
 			Helper.debug("Hope that the navigator cancels the logout-process.");
 		}
 
+		if (loot_in_a_row == 0) {
+			if (this.findClosestLoot().isValid()) {
+				// Initially found something. Stop the ship inflight and take another
+				// screenshot to get the loots precise position.
+				this.client.haltShip(); // by triggering the logout process
+
+				// The logout process will be canceled by either the collector
+				// clicking loot or the navigator clicking on the minimap.
+			}
+			else {
+				Helper.debug("No loot found");
+				return false;
+			}
+		}
+
 		// After the first match try to prevent to find matches of loot we
 		// just collected but whichs animation is not finished yet.
 		// We could do a timeout instead, but that would slow us down.
 		var closest_loot = this.findClosestLoot(loot_in_a_row > 0);
 		
 		if (!closest_loot.isValid()) {
-			// Nothing found and clicked this time, but maybe we found something before.
-			return loot_in_a_row > 0;
+			// Nothing found this time. Cancel the triggered logout process when the
+			// ship has not been moved so far which would have canceled the process already.
+			if (loot_in_a_row == 0) {
+				// Cancel the logout process explicitly by moving
+				Helper.debug("Cancel logout process by flying somewhere.");
+				this.navi.flyToRandomLocation();
+				return false;
+			}
+			return true;
 		}
 
 		Helper.debug("Closest loot found:", closest_loot);
@@ -1224,7 +1267,7 @@ Scheduler.prototype.checkForLoot = function() {
 
 Scheduler.prototype.moveTheShip = function() {
 	Helper.log("Flying to a random location on the current map...");
-	Browser.leftClick(this.navi.getNextDestination());
+	this.navi.flyToRandomLocation();
 }
 
 Scheduler.prototype.runMainAlgorithm = function() {
