@@ -767,7 +767,7 @@ Client.prototype.getIngame = function() {
 		Helper.log("Client is not ingame. Looking for the start button...");
 
 		var screenshot = Browser.takeScreenshot();
-		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.97);
+		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.94);
 		
 		if (start_button_match.isValid()) {
 			Browser.leftClick(start_button_match.getRect().getCenter());
