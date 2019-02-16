@@ -766,7 +766,7 @@ Client.prototype.getIngame = function() {
 	Browser.finishLoading();
 
 	while (!this.isIngame()) {
-		Helper.log("Waiting for the game to load...")
+		Helper.log("Client is not ingame. Looking for the start button...");
 
 		var screenshot = Browser.takeScreenshot();
 		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.97);
@@ -774,6 +774,8 @@ Client.prototype.getIngame = function() {
 		if (start_button_match.isValid()) {
 			Browser.leftClick(start_button_match.getRect().getCenter());
 			Helper.log("Game start button clicked.");
+		} else {
+			Helper.log("Start button not found. Checking again in 3 seconds.");
 		}
 
 		Helper.sleep(3);
@@ -1356,10 +1358,7 @@ function main() {
 		// The client is already ingame. Reload to make sure ressource modification works.
 		Helper.log("Reloading to make the loot collector work...");
 
-		Browser.reload();
-		Browser.finishLoading();
-
-		client.getIngame();
+		client.getIngame(); // Will reload the page
 		Helper.sleep(2);
 
 		Helper.log("Loot collector prepared.");
