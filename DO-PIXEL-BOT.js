@@ -417,7 +417,7 @@ IngameWindow.prototype.beClosed = function() {
 }
 
 IngameWindow.prototype.takeScreenshot = function() {
-	if (!this.beOpened() || (this.isWindowCached() && !this.cacheWindow())) {
+	if (!this.beOpened() || (!this.isWindowCached() && !this.cacheWindow())) {
 		Helper.debug("Opening and caching a window before taking a screenshot failed.");
 		return Image(); // Empty, invalid image
 	}
