@@ -114,27 +114,27 @@ var INTERN_MAPNAME_MAPPING = [ // Which mapname template in MAPNAME_TPLS corresp
 ];
 
 var OUTER_MINIMAP_SIZES = [
-	{ width: 228, height: 180 },
-	{ width: 247, height: 192 },
-	{ width: 270, height: 207 },
-	{ width: 300, height: 225 },
-	{ width: 337, height: 248 },
-	{ width: 387, height: 279 },
-	{ width: 457, height: 323 },
-	{ width: 562, height: 389 },
-	{ width: 737, height: 498 }
+	new Size(228, 180),
+	new Size(247, 192),
+	new Size(270, 207),
+	new Size(300, 225),
+	new Size(337, 248),
+	new Size(387, 279),
+	new Size(457, 323),
+	new Size(562, 389),
+	new Size(737, 498),
 ];
 
 var INNER_MINIMAP_SIZES = [
-	{ width: 187, height: 115 },
-	{ width: 206, height: 127 },
-	{ width: 229, height: 142 },
-	{ width: 259, height: 160 },
-	{ width: 296, height: 183 },
-	{ width: 346, height: 214 },
-	{ width: 416, height: 258 },
-	{ width: 521, height: 324 },
-	{ width: 696, height: 433 }
+	new Size(187, 115),
+	new Size(206, 127),
+	new Size(229, 142),
+	new Size(259, 160),
+	new Size(296, 183),
+	new Size(346, 214),
+	new Size(416, 258),
+	new Size(521, 324),
+	new Size(696, 433),
 ];
 
 var OUTER_MM_TO_INNER_MM_OFFSET = {
@@ -370,8 +370,8 @@ Minimap.prototype.getOuterRect = function(ignore_cache) {
 	return new Rect(
 		position.getX(),
 		position.getY(),
-		outer_size.width,
-		outer_size.height
+		outer_size.getWidth(),
+		outer_size.getHeight()
 	)
 }
 
@@ -382,8 +382,8 @@ Minimap.prototype.getInnerRect = function(ignore_cache) {
 	return new Rect(
 		position.getX() + OUTER_MM_TO_INNER_MM_OFFSET.x,
 		position.getY() + OUTER_MM_TO_INNER_MM_OFFSET.y,
-		inner_size.width,
-		inner_size.height
+		inner_size.getWidth(),
+		inner_size.getHeight()
 	);
 }
 
