@@ -158,16 +158,27 @@
 				]
 			},
 			{
-				"name": "Advanced (be carefull)",
+				"name": "Ingame windows managament",
 				"options": [
 					{
-						"id": "general_check_timeout_in_min",
-						"type": "integer",
-						"label": "Connection and ship status check timeout in minutes",
-						"default": 3,
-						"min": 1,
-						"max": 10
+						"id": "close_unnecessary_windows",
+						"type": "boolean",
+						"label": "Open required windows and close all the others",
+						"default": true
 					},
+					{
+						"id": "window_animation_in_ms",
+						"type": "integer",
+						"label": "Ingame window open/close animation time in ms",
+						"default": 1000,
+						"min": 1000,
+						"max": 3000
+					}
+				]
+			},
+			{
+				"name": "Advanced (be carefull)",
+				"options": [
 					{
 						"id": "pet_check_timeout_in_min",
 						"type": "integer",
@@ -183,14 +194,6 @@
 						"default": 200,
 						"min": 50,
 						"max": 2000
-					},
-					{
-						"id": "window_animation_in_ms",
-						"type": "integer",
-						"label": "Ingame window open/close animation time in ms",
-						"default": 1000,
-						"min": 1000,
-						"max": 3000
 					}
 				]
 			}

@@ -1491,10 +1491,39 @@ function main() {
 	// | Bot components setup |
 	// +----------------------+
 
+	var minimap_window = new IngameWindow(OUTER_MINIMAP_SIZES.slice(-1)[0], MINIMAP_ICON_TPL, MINIMAP_BUTTON_TPL);
+	var user_window = new IngameWindow(USER_WINDOW_SIZE, USER_ICON_TPL, USER_BUTTON_TPL);
+	var pet_window = new IngameWindow(PET_WINDOW_SIZE, PET_ICON_TPL, PET_BUTTON_TPL);
+
 	var minimap = new Minimap();
 	var pet = new PET();
 	var navi = new Navigator(minimap);
 	var collector = new Collector(client, navi);
+
+	// +----------------------------------+
+	// | Close unnecessary ingame windows |
+	// +----------------------------------+
+
+	if (Config.getValue("close_unnecessary_windows")) {
+		Helper.log("Closing all windows.");
+		IngameWindow.closeAll();
+
+		Helper.log("All windows closed.");
+		Helper.log("Opening required windows. (Increase the window animation time if this fails).");
+
+		if (!minimap_window.beOpened()) {
+			Helper.log("FATAL! The bot was unable to open the Minimap window.");
+			return;
+		}
+		if (Config.getValue("manage_pet") && !pet_window.beOpened()) {
+			Helper.log("FATAL! The bot was unable to open the PET window.");
+			return;
+		}
+		if (Config.getValue("hunt_npcs") && !user_window.beOpened()) {
+			Helper.log("DATAL! The bot was unable to open the User windows.");
+			return;
+		}
+	}
 
 	// +------------------------------+
 	// | Find and measure the minimap |
@@ -1508,7 +1537,8 @@ function main() {
 			break;
 		}
 
-		Helper.log("Minimap not found", tries, "out of 4 tries. Trying again after 3 seconds");
+		Helper.log("Minimap not found. Make sure you turned the games quality to low.");
+		Helper.log("Trying again after 3 seconds.", tries, "out of 4 tries.");
 		Helper.sleep(3); // Try in 3 seconds again
 	}
 
