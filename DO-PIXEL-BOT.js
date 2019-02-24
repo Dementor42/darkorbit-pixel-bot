@@ -6,6 +6,7 @@ var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
 var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
 var PET_TPL_DIR = TEMPLATE_DIR + "pet/";
+var WINDOWS_DIR = TEMPLATE_DIR + "windows/";
 var MM_LEVEL_DIR = MINIMAP_DIR + "levels/";
 var MM_MAPNAMES_DIR = MINIMAP_DIR + "mapnames/";
 
@@ -46,6 +47,20 @@ var LOOT_SWF_URL = "https://pbdo-bot.net/magic/2D/circle_ffff00.swf";
 var LOOT_MIN_HSV = new Color(55, 200, 200, "hsv");
 var LOOT_MAX_HSV = new Color(70, 255, 255, "hsv");
 var LOOT_BLOB_TPL = new BlobTpl(1200, 1220);
+
+var NORMAL_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "normal_close_button.png");
+var LARGER_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "larger_close_button.png");
+var ASSEMBLY_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "assembly_close_button.png");
+var CLOSE_BUTTON_TPLS = [NORMAL_CLOSE_BUTTON_TPL, LARGER_CLOSE_BUTTON_TPL, ASSEMBLY_CLOSE_BUTTON_TPL];
+
+var MINIMAP_BUTTON_TPL = new Image(WINDOWS_DIR + "minimap_button.png");
+var MINIMAP_ICON_TPL = new Image(WINDOWS_DIR + "minimap_icon.png");
+var PET_BUTTON_TPL = new Image(WINDOWS_DIR + "pet_button.png");
+var PET_ICON_TPL = new Image(WINDOWS_DIR + "pet_icon.png");
+var USER_BUTTON_TPL = new Image(WINDOWS_DIR + "user_button.png");
+var USER_ICON_TPL = new Image(WINDOWS_DIR + "user_icon.png");
+
+var USER_WINDOW_SIZE = new Size(224, 108);
 
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
@@ -321,6 +336,117 @@ function getClosestMatch(matches) {
 	}
 
 	return closest_match;
+}
+
+// +--------------------------+
+// | Ingame Window Management |
+// +--------------------------+
+
+var IngameWindow = function(max_size, icon_tpl, button_tpl) {
+	this.max_size = max_size;
+	this.icon_tpl = icon_tpl;
+	this.button_tpl = button_tpl;
+	this.cached_window = new Rect();
+	this.cached_button = new Point(-1, -1);
+}
+
+IngameWindow.prototype.getButtonMatch = function() {
+	var screenshot = Browser.takeScreenshot();
+	return Vision.findMatch(screenshot, this.button_tpl, 0.99);
+}
+
+IngameWindow.prototype.getIconMatch = function(pretaken_screenshot) {
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	return Vision.findMatch(screenshot, this.icon_tpl, 0.99);
+}
+
+IngameWindow.prototype.cacheWindow = function() {
+	var icon_match = this.getIconMatch();
+	if (icon_match.isValid()) {
+		this.cached_window = new Rect(icon_match.getRect().getTopLeft(), this.max_size);
+		return true;
+	}
+	Helper.debug("Caching a IngameWindow window failed");
+	return false;
+}
+
+IngameWindow.prototype.cacheButton = function() {
+	var button_match = this.getButtonMatch();
+	if (button_match.isValid()) {
+		this.cached_button = button_match.getRect().getCenter();
+		return true;
+	}
+	Helper.debug("Caching a IngameWindow button failed");
+	return false;
+}
+
+IngameWindow.prototype.isWindowCached = function() {
+	return !this.cached_window.isEmpty();
+}
+
+IngameWindow.prototype.isButtonCached = function() {
+	return this.cached_button.getX() != -1;
+}
+
+IngameWindow.prototype.isVisible = function() {
+	var screenshot = this.isWindowCached() ? this.takeScreenshot() : Browser.takeScreenshot();
+	return this.getIconMatch(screenshot).isValid();
+}
+
+IngameWindow.prototype.clickButton = function() {
+	if (!this.isButtonCached() && !this.cacheButton()) {
+		return false;
+	}
+	leftClickAndPreventHover(this.cached_button);
+	Helper.msleep(Config.getValue("window_animation_in_ms"));
+	return true;
+}
+
+IngameWindow.prototype.beOpened = function() {
+	if (!this.isVisible()) {
+		return this.clickButton();
+	}
+	return true;
+}
+
+IngameWindow.prototype.beClosed = function() {
+	if (this.isVisible()) {
+		return this.clickButton();
+	}
+	return true;
+}
+
+IngameWindow.prototype.takeScreenshot = function() {
+	if (!this.beOpened() || (this.isWindowCached() && !this.cacheWindow())) {
+		Helper.debug("Opening and caching a window before taking a screenshot failed.");
+		return Image(); // Empty, invalid image
+	}
+	var screenshot = Browser.takeScreenshot();
+	return screenshot.copy(this.cached_window);
+}
+
+IngameWindow.getAnyCloseButtonMatch = function() {
+	for (var i = 0; i < CLOSE_BUTTON_TPLS.length; i++) {
+		var screenshot = Browser.takeScreenshot();
+		var tpl = CLOSE_BUTTON_TPLS[i];
+		var match = Vision.findMatch(screenshot, tpl, 0.99);
+		if (match.isValid()) {
+			return match;
+		}
+	}
+	return new Match(); // Invalid match
+}
+
+IngameWindow.closeAll = function() {
+	while (true) {
+		var close_button_match = IngameWindow.getAnyCloseButtonMatch();
+		if (close_button_match.isValid()) {
+			leftClickAndPreventHover(close_button_match.getRect().getCenter());
+			Helper.msleep(Config.getValue("window_animation_in_ms"));
+			continue;
+		}
+		break;
+	}
 }
 
 // +--------------------------+

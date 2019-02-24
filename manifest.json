@@ -183,6 +183,14 @@
 						"default": 200,
 						"min": 50,
 						"max": 2000
+					},
+					{
+						"id": "window_animation_in_ms",
+						"type": "integer",
+						"label": "Ingame window open/close animation time in ms",
+						"default": 1000,
+						"min": 1000,
+						"max": 3000
 					}
 				]
 			}
