@@ -212,6 +212,14 @@
 				"name": "Advanced (be carefull)",
 				"options": [
 					{
+						"id": "start_delay_in_secs",
+						"type": "integer",
+						"label": "Max. game load time in seconds",
+						"default": 5,
+						"min": 1,
+						"max": 45
+					},
+					{
 						"id": "pet_check_timeout_in_min",
 						"type": "integer",
 						"label": "Check the PET every X minutes",

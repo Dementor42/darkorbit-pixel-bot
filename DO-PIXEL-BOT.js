@@ -1809,6 +1809,14 @@ function main() {
 		Helper.log("Loot collector/NPC hunter prepared.");
 	}
 
+	// +-----------------------+
+	// | Wait for slow clients |
+	// +-----------------------+
+
+	Helper.log("Waiting", Config.getValue("start_delay_in_secs"), "seconds for the game to load completely.");
+	Helper.sleep(Config.getValue("start_delay_in_secs"));
+	Helper.log("The game should now be completely loaded. If not increase the 'Max. game load time in seconds'");
+
 	// +----------------------+
 	// | Bot components setup |
 	// +----------------------+
@@ -1865,21 +1873,8 @@ function main() {
 	// | Find and measure the minimap |
 	// +------------------------------+	
 
-	for (var tries = 1; tries <= 4; tries++) {
-		Helper.debug(tries, "time trying to find the minimap on startup.");
-		
-		if (minimap.getLevel() !== undefined) {
-			Helper.debug("Minimap found on", tries, "try");
-			break;
-		}
-
-		Helper.log("Minimap not found. Make sure you turned the games quality to low.");
-		Helper.log("Trying again after 3 seconds.", tries, "out of 4 tries.");
-		Helper.sleep(3); // Try in 3 seconds again
-	}
-
 	if (minimap.getLevel() === undefined) {
-		Helper.log("FATAL! The bot was unable to find the ingame Minimap. Stopping now.")
+		Helper.log("FATAL! Minimap not found. Make sure you turned the games quality to low.");
 		return;
 	}
 
