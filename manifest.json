@@ -186,6 +186,14 @@
 							"MCB-50 (x3)": "x3",
 							"UCB-100 (x4)": "x4"
 						}
+					},
+					{
+						"id": "escape_check_delay_in_secs",
+						"type": "integer",
+						"label": "NPC escape check timeout in secs",
+						"default": 2,
+						"min": 1,
+						"max": 10
 					}
 				]
 			},

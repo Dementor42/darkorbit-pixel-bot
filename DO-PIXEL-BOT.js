@@ -1484,7 +1484,7 @@ Hunter.prototype.huntNPCs = function() {
 			}
 
 			// Check whether the NPC has escaped
-			if (escape_check_timer.hasExpired(5 * 1000)) {
+			if (escape_check_timer.hasExpired(Config.getValue("escape_check_delay_in_secs") * 1000)) {
 				Helper.log("Checking whether the NPC escaped...");
 				escape_check_timer.restart();
 
