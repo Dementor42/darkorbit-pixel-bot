@@ -6,6 +6,7 @@ var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
 var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
 var PET_TPL_DIR = TEMPLATE_DIR + "pet/";
+var ITEMS_TPL_DIR = TEMPLATE_DIR + "items/";
 var WINDOWS_DIR = TEMPLATE_DIR + "windows/";
 var MM_LEVEL_DIR = MINIMAP_DIR + "levels/";
 var MM_MAPNAMES_DIR = MINIMAP_DIR + "mapnames/";
@@ -23,6 +24,10 @@ var REPAIR_ON_STAGE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_stage_option.png
 
 var DISCONNECTED_TPL = new Image(CLIENT_TPL_DIR + "disconnected.png");
 var RECONNECTING_TPL = new Image(CLIENT_TPL_DIR + "reconnecting.png");
+
+var HPBAR_LEFT_TPL = new Image(CLIENT_TPL_DIR + "hpbar_left.png");
+var HPBAR_RIGHT_TPL = new Image(CLIENT_TPL_DIR + "hpbar_right.png");
+var HNSBAR_SIZE = new Size(51, 14);
 
 var PET_REPAIR_BTN_TPL = new Image(PET_TPL_DIR + "repair_button.png");
 var PET_PLAY_BTN_TPL = new Image(PET_TPL_DIR + "play_button.png");
@@ -48,6 +53,16 @@ var LOOT_MIN_HSV = new Color(55, 200, 200, "hsv");
 var LOOT_MAX_HSV = new Color(70, 255, 255, "hsv");
 var LOOT_BLOB_TPL = new BlobTpl(1200, 1220);
 
+var NPC_SWF_REPLACEMENT_URL = "https://pbdo-bot.net/magic/3D/sr-x-2.swf";
+var NPC_MIN_HSV = new Color(0, 200, 200, "hsv");
+var NPC_MAX_HSV = new Color(3, 255, 255, "hsv");
+var NPC_BLOB_TPL = new BlobTpl(300, /*1400*/ 2800);
+
+var X1_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x1.png");
+var X2_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x2.png");
+var X3_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x3.png");
+var X4_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x4.png");
+
 var NORMAL_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "normal_close_button.png");
 var LARGER_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "larger_close_button.png");
 var ASSEMBLY_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "assembly_close_button.png");
@@ -61,6 +76,8 @@ var USER_BUTTON_TPL = new Image(WINDOWS_DIR + "user_button.png");
 var USER_ICON_TPL = new Image(WINDOWS_DIR + "user_icon.png");
 
 var USER_WINDOW_SIZE = new Size(224, 108);
+
+var USER_CREDITS_OFFSET = new Rect(new Point(114, 30), new Size(108, 16)); // Relative to the user windows borders
 
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
@@ -356,7 +373,7 @@ IngameWindow.prototype.getButtonMatch = function() {
 }
 
 IngameWindow.prototype.getIconMatch = function(pretaken_screenshot) {
-	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	var screenshot = Browser.takeScreenshot(); // FIXME!!!
 	return Vision.findMatch(screenshot, this.icon_tpl, 0.99);
 }
 
@@ -1240,15 +1257,296 @@ Collector.prototype.collectLoot = function() {
 	return true;
 }
 
+// +------------+
+// | NPC Hunter |
+// +------------+
+
+var Hunter = function(pet, navi, client, user_window) {
+	this.pet = pet;
+	this.navi = navi;
+	this.client = client;
+	this.user_window = user_window;
+	this.last_credits_image = new Image();
+	this.cached_x1_ammo = new Point(-1, -1);
+	this.cached_x2_ammo = new Point(-1, -1);
+	this.cached_x3_ammo = new Point(-1, -1);
+	this.cached_x4_ammo = new Point(-1, -1);
+	this.cached_hnsbar = new Rect(); // TODO: maybe move this into a dedicated Ship class
+}
+
+Hunter.prototype.cacheAmmoPosition = function(ammo_tpl, current_and_fallback) {
+	var ammo_position = current_and_fallback;
+	var screenshot = Browser.takeScreenshot();
+
+	if (current_and_fallback.getX() == -1) {
+		Helper.debug("Selected ammo not cached yet.");
+
+		var ammo_match = Vision.findMatch(screenshot, ammo_tpl, 0.99);
+		if (ammo_match.isValid()) {
+			ammo_position = ammo_match.getRect().getCenter();
+		} else {
+			Helper.debug("Couldn't find and cache selected ammo.");
+		}
+	}
+	return ammo_position;
+}
+
+Hunter.prototype.getAmmoPosition = function() {
+	switch (Config.getValue("hunter_ammo")) {
+		case "x4":
+			this.cached_x4_ammo = this.cacheAmmoPosition(X4_AMMO_TPL, this.cached_x4_ammo);
+			return this.cached_x4_ammo;
+		case "x3":
+			this.cached_x3_ammo = this.cacheAmmoPosition(X3_AMMO_TPL, this.cached_x3_ammo);
+			return this.cached_x3_ammo;
+		case "x2":
+			this.cached_x2_ammo = this.cacheAmmoPosition(X2_AMMO_TPL, this.cached_x2_ammo);
+			return this.cached_x2_ammo;
+		default: // x1
+			this.cached_x1_ammo = this.cacheAmmoPosition(X1_AMMO_TPL, this.cached_x1_ammo);
+			return this.cached_x1_ammo;
+	}
+}
+
+Hunter.prototype.startFiringLasers = function() {
+	var ammo_position = this.getAmmoPosition();
+	if (ammo_position.getX() == -1) {
+		Helper.log("Unable to start shooting.");
+		return false;
+	}
+	Browser.leftClick(ammo_position);
+	return true;
+}
+
+Hunter.prototype.rememberOurHNSBar = function() {
+	// When calling this method the PET must not be activated and the ship must not be on low HP.
+	// HSN bar := HP-Nano-Shield-Bar
+	var screenshot = Browser.takeScreenshot();
+	var matches = this.getNormalisedLeftHNSBarMatches(screenshot);
+	if (matches.length != 1) {
+		Helper.debug("Found", matches.length, "HSN bars. Expected 1.");
+		return false;
+	}
+
+	this.cached_hnsbar = matches[0].getRect();
+	return true;
+}
+
+Hunter.prototype.filterOurHNSBar = function(matches) {
+	var filtered_matches = [];
+	for (var i = matches.length - 1; i >= 0; i--) {
+		var match = matches[i];
+		if (!this.cached_hnsbar.contains(match.getRect().getCenter())) {
+			filtered_matches.push(match);
+		}
+	}
+	return filtered_matches;
+}
+
+Hunter.prototype.getNormalisedLeftHNSBarMatches = function(screenshot) {
+	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.999);
+	for (var i = matches.length - 1; i >= 0; i--) {
+		var match = matches[i];
+		match.setRect(new Rect(match.getRect().getTopLeft(), HNSBAR_SIZE));
+	}
+	return matches;
+}
+
+Hunter.prototype.getNormalisedRightHNSBarMatches = function(screenshot) {
+	var matches = Vision.findMatches(screenshot, HPBAR_RIGHT_TPL, 0.999);
+	for (var i = matches.length - 1; i >= 0; i--) {
+		var match = matches[i];
+		var left = match.getRect().getRight() - HNSBAR_SIZE.getWidth();
+		var top = match.getRect().getTop();
+		match.setRect(new Rect(new Point(left, top), HNSBAR_SIZE));
+	}
+	return matches;
+}
+
+Hunter.prototype.numOfOtherHNSBars = function() {
+	var screenshot = Browser.takeScreenshot();
+	var hpbar_left_matches = this.getNormalisedLeftHNSBarMatches(screenshot);
+	var hpbar_right_matches = this.getNormalisedRightHNSBarMatches(screenshot);
+	var all_matches = hpbar_left_matches.concat(hpbar_right_matches);
+	var filtered_matches = this.filterOurHNSBar(all_matches);
+	var unique_matches = [];
+
+	for (var a = 0; a < filtered_matches.length; a++) {
+		var a_match = filtered_matches[a];
+		var is_unique = true;
+
+		for (var u = 0; u < unique_matches.length; u++) {
+			var u_match = unique_matches[u];
+
+			// Filter duplicated matches
+			if (a_match.getRect().intersects(u_match.getRect())) {
+				is_unique = false;
+				break;
+			}
+		}
+
+		if (is_unique) {
+			unique_matches.push(a_match);
+		}
+	}
+
+	return unique_matches.length;
+}
+
+Hunter.prototype.getCreditsScreenshot = function() {
+	var screenshot = this.user_window.takeScreenshot();
+	var credits_image = screenshot.copy(USER_CREDITS_OFFSET);
+	// Isolate the white text
+	var min_hsv = new Color(0, 0, 0, "hsv");
+	var max_hsv = new Color(10, 255, 255, "hsv");
+	return credits_image.isolateColorRange(min_hsv, max_hsv);
+}
+
+Hunter.prototype.rememberCredits = function() {
+	var credits_image = this.getCreditsScreenshot();
+	if (!credits_image.isNull()) {
+		this.last_credits_image = credits_image;
+		return true;
+	}
+	Helper.debug("The NPC Hunter was unable to remember how many credits to had.");
+	return false;
+}
+
+Hunter.prototype.hasCreditsEarned = function() {
+	var new_credits_image = this.getCreditsScreenshot();
+	var pixel_equality = new_credits_image.pixelEquality(this.last_credits_image);
+	return pixel_equality < 1;
+}
+
+Hunter.prototype.findClosestNPCs = function() {
+	var screenshot = Browser.takeScreenshot();
+	var isolated = screenshot.isolateColorRange(NPC_MIN_HSV, NPC_MAX_HSV);
+	var matches = Vision.findBlobs(isolated, NPC_BLOB_TPL);
+	return getClosestMatch(matches);
+}
+
+Hunter.prototype.huntNPCs = function() {
+	// Algorithm:
+	// We check whether NPCs are around.
+	// If there are and we are moving, we stop and look for NPCs again.
+	// If we found an NPC and are not moving, we select it.
+	// Then we remember how much XP we have. Later checking the XP will tell us whether we killed the NPC.
+	// Now we start firing.
+	// We keep firing as long as we have no XP earned or there is one HP/Nano/Shield bar less visible.
+	//
+	// "Issues":
+	// - The Hunter will assume the NPC escaped when our PET leaves the screen.
+	// - It's hard to filter the the PETs HP/Nano/Shield bar though.
+	// - We filter our own HNS bar by remembering it's location when starting the bot.
+	// - When our ship gets hit by an Witz-Rocket our HSN bar might move and the Hunter will no longer work.
+
+	for (var npcs_in_a_row = 0; npcs_in_a_row < 20; npcs_in_a_row++) {
+
+		var npc_match = this.findClosestNPCs();
+		if (!npc_match.isValid()) {
+			return false;
+		}
+
+		if (npcs_in_a_row == 0 && npc_match.isValid() && this.navi.shipIsMoving()) {
+			// We need to halt the ship if its moving by triggering the logout process.
+			// Starting to fire doesn't cancel the logout process though.
+			this.client.haltShip();
+			Helper.msleep(Config.getValue("window_animation_in_ms"));
+			this.client.haltShip();
+			continue;
+		}
+
+		Browser.leftClick(npc_match.getRect().getCenter());
+		Helper.log("Found and selected an NPC.");
+
+		this.rememberCredits();
+		Helper.debug("Remembered credits.");
+
+		this.startFiringLasers();
+		Helper.log("Started firing lasers.");
+
+		// Make sure health and connection are checked after some time
+		var checks_timer = new Timer();
+		checks_timer.start();
+
+		// Check every few seconds whether the NPC excaped. (expensive check)
+		var escape_check_timer = new Timer();
+		escape_check_timer.start();
+
+		while (true) {
+
+			// Check whether the NPC has been killed
+			if (this.hasCreditsEarned()) {
+				Helper.log("NPC killed.");
+				break;
+			}
+
+			// Check whether the NPC has escaped
+			if (escape_check_timer.hasExpired(5 * 1000)) {
+				Helper.log("Checking whether the NPC escaped...");
+				escape_check_timer.restart();
+
+				var cur_num_hnsbars = this.numOfOtherHNSBars();
+				Helper.debug("Current number of hnsbars:", cur_num_hnsbars);
+
+				// When we use a PET we assume it's HP bar is visible.
+				var pet_activated = Config.getValue("manage_pet") && this.pet.isActivated();
+
+				if ((!pet_activated && cur_num_hnsbars == 0) || (pet_activated && cur_num_hnsbars == 1)) {
+					Helper.log("The NPC escaped.");
+					break;
+				}
+			}
+
+			// Check whether we lost connection or got killed
+			if (checks_timer.hasExpired(20 * 1000)) {
+				Helper.debug("We were shooting an NPC for 20 seconds. Time to do some checks.");
+				checks_timer.restart();
+
+				if (this.client.isDestroyed() || this.client.isDisconnected()) {
+					Helper.log("Got interrupted hunting an NPC.");
+					return true;
+				}
+				continue;
+			}
+
+			Helper.log("Still shooting the NPC...");
+			Helper.msleep(100);
+		}
+	}
+
+	Helper.debug("Finding more than 20 NPCs in one spot is unlikely. We might be stuck somehow.");
+	return true;
+}
+
+Hunter.registerResourceRules = function() {
+	if (Config.getValue("hunter_mode") == "x-2-all") {
+		Browser.blockResource("spacemap/3d/textures/streuner-soldier_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/streuner-soldier.awd");
+		Browser.blockResource("spacemap/3d/textures/streunerr-boss_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/streunerr-boss.awd");
+		Browser.blockResource("spacemap/3d/textures/streuner_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/streuner.awd");
+		Browser.blockResource("spacemap/3d/textures/streuner-specialist_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/streuner-specialist.awd");
+		Browser.blockResource("spacemap/3d/textures/lordakia_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/lordakia.awd");
+		Browser.blockResource("spacemap/3d/textures/lordakia-boss_diffuse_128.atf");
+		Browser.blockResource("spacemap/3d/meshes/lordakia-boss.awd");
+		Browser.replaceResource("replacementShips", NPC_SWF_REPLACEMENT_URL);
+	}
+}
+
 // +----------------+
 // | Task Scheduler |
 // +----------------+
 
-var Scheduler = function(client, minimap, pet, collector, navi) {
+var Scheduler = function(client, minimap, pet, collector, hunter, navi) {
 	this.client = client;
 	this.minimap = minimap;
 	this.pet = pet;
 	this.collector = collector;
+	this.hunter = hunter;
 	this.navi = navi;
 
 	this.just_collected_something = false;
@@ -1315,6 +1613,12 @@ Scheduler.prototype.itsTimeToCheckTheMap = function() {
 
 Scheduler.prototype.itsTimeToCollectLoot = function() {
 	var good_idea = Config.getValue("collect_loot");
+	var necessary = good_idea;
+	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimerToHuntNPCs = function() {
+	var good_idea = Config.getValue("hunt_npcs");
 	var necessary = good_idea;
 	return good_idea && necessary;
 }
@@ -1432,6 +1736,11 @@ Scheduler.prototype.runMainAlgorithm = function() {
 			Helper.debug("Time to check for loot...");
 			this.checkForLoot();
 		}
+
+		if (this.itsTimerToHuntNPCs()) {
+			Helper.debug("Time to hunt NPCs...");
+			this.hunter.huntNPCs();
+		}
 		
 		if (this.itsTimeToMoveTheShip()) {
 			Helper.debug("Time to move the ship...");
@@ -1464,9 +1773,19 @@ function main() {
 	// | Prepare the client and login |
 	// +------------------------------+
 
+	if (Config.getValue("collect_loot") && Config.getValue("hunt_npcs")) {
+		Helper.log("FATAL: The Loot Collector and NPC Hunter currently can't be used at the same time.");
+		return;
+	}
+
 	if (Config.getValue("collect_loot")) {
 		client.modifyResources2D();
 		Helper.log("REMEMBER: The loot collector currently only works in 2D mode.");
+	}
+
+	if (Config.getValue("hunt_npcs")) {
+		Hunter.registerResourceRules();
+		Helper.log("REMEMBER: The NPC hunter only works in 3D mode.");
 	}
 
 	if (!client.isIngame()) {
@@ -1480,14 +1799,14 @@ function main() {
 		}
 	}
 
-	else if (Config.getValue("collect_loot")) {
+	else if (Config.getValue("collect_loot") || Config.getValue("hunt_npcs")) {
 		// The client is already ingame. Reload to make sure ressource modification works.
-		Helper.log("Reloading to make the loot collector work...");
+		Helper.log("Reloading to make the loot collector or the NPC hunter work...");
 
 		client.getIngame(); // Will reload the page
 		Helper.sleep(2);
 
-		Helper.log("Loot collector prepared.");
+		Helper.log("Loot collector/NPC hunter prepared.");
 	}
 
 	// +----------------------+
@@ -1502,6 +1821,7 @@ function main() {
 	var pet = new PET();
 	var navi = new Navigator(minimap);
 	var collector = new Collector(client, navi);
+	var hunter = new Hunter(pet, navi, client, user_window);
 
 	// +----------------------------------+
 	// | Close unnecessary ingame windows |
@@ -1510,8 +1830,21 @@ function main() {
 	if (Config.getValue("close_unnecessary_windows")) {
 		Helper.log("Closing all windows.");
 		IngameWindow.closeAll();
-
 		Helper.log("All windows closed.");
+	}
+
+	// At this point the PET window is closed. So we won't confuse the HP bar
+	// shown in the PET window with the ships HP bar.
+	if (!hunter.rememberOurHNSBar()) {
+		Helper.log("FATAL! The bot was unable to find the ships HP bar! Make sure you're not on low HP.");
+		return;
+	}
+
+	// +------------------------------+
+	// | Open required ingame windows |
+	// +------------------------------+
+
+	if (Config.getValue("close_unnecessary_windows")) {
 		Helper.log("Opening required windows. (Increase the window animation time if this fails).");
 
 		if (!minimap_window.beOpened()) {
@@ -1571,7 +1904,7 @@ function main() {
 	// +-------------------------------------+
 	
 	Helper.log("Starting to bot.");
-	var scheduler = new Scheduler(client, minimap, pet, collector, navi);
+	var scheduler = new Scheduler(client, minimap, pet, collector, hunter, navi);
 	scheduler.runMainAlgorithm();
 }
 

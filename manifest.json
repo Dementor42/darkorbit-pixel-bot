@@ -158,6 +158,38 @@
 				]
 			},
 			{
+				"name": "NPC hunter (experimental)",
+				"options": [
+					{
+						"id": "hunt_npcs",
+						"type": "boolean",
+						"label": "Auto. hunt NPCs (Requires 3D mode!)",
+						"default": false
+					},
+					{
+						"id": "hunter_mode",
+						"type": "choice",
+						"label": "What to hunt?",
+						"default": "x-2-all",
+						"choices": {
+							"All NPCs on x-2": "x-2-all"
+						}
+					},
+					{
+						"id": "hunter_ammo",
+						"type": "choice",
+						"label": "Laser ammunition",
+						"default": "x1",
+						"choices": {
+							"LCB-10 (x1)": "x1",
+							"MCB-25 (x2)": "x2",
+							"MCB-50 (x3)": "x3",
+							"UCB-100 (x4)": "x4"
+						}
+					}
+				]
+			},
+			{
 				"name": "Ingame windows managament",
 				"options": [
 					{
