@@ -346,8 +346,10 @@ function getClosestMatch(matches) {
 	for (var i = 0; i < matches.length; i++) {
 		var match = matches[i];
 
-		if (!closest_match.isValid() || match.getRect().getCenter().manhattanDistance(center) 
-			< closest_match.getRect().getCenter().manhattanDistance(center)) {
+		var old_dist = closest_match.getRect().getCenter().pointSubtracted(center).manhattanDistance();
+		var new_dist = match.getRect().getCenter().pointSubtracted(center).manhattanDistance();
+
+		if (!closest_match.isValid() || new_dist < old_dist) {
 			closest_match = match;
 		}
 	}
