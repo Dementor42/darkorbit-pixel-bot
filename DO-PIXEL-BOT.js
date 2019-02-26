@@ -1785,7 +1785,7 @@ function main() {
 
 	if (Config.getValue("hunt_npcs") === true) {
 		Hunter.registerResourceRules();
-		Helper.log("REMEMBER: The NPC hunter only works in 3D mode.");
+		Helper.log("REMEMBER: To turn your settings to low.");
 	}
 
 	if (!client.isIngame()) {

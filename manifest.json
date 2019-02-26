@@ -163,7 +163,7 @@
 					{
 						"id": "hunt_npcs",
 						"type": "boolean",
-						"label": "Auto. hunt NPCs (Requires 3D mode!)",
+						"label": "Auto. hunt NPCs",
 						"default": false
 					},
 					{
