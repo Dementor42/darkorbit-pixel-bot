@@ -1427,6 +1427,12 @@ Hunter.prototype.findClosestNPCs = function() {
 	return getClosestMatch(matches);
 }
 
+Hunter.prototype.isActuallyAttacking = function() {
+	// Sometimes starting an attack doesnt work. We need this method to detect
+	// such situations.
+	return true; // TODO: Implement me!
+}
+
 Hunter.prototype.huntNPCs = function() {
 	// Algorithm:
 	// We check whether NPCs are around.
@@ -1480,6 +1486,12 @@ Hunter.prototype.huntNPCs = function() {
 			// Check whether the NPC has been killed
 			if (this.hasCreditsEarned()) {
 				Helper.log("NPC killed.");
+				break;
+			}
+
+			// Check whether the ship failed to attack
+			if (!this.isActuallyAttacking() && !this.hasCreditsEarned()) {
+				Helper.log("The ship has failed to start attacking.");
 				break;
 			}
 
@@ -1788,6 +1800,11 @@ function main() {
 	if (Config.getValue("hunt_npcs") === true) {
 		Hunter.registerResourceRules();
 		Helper.log("REMEMBER: To turn your settings to low.");
+
+		// TODO: Remove this once the issues has been fixed
+		Helper.log("REMEMBER: Make the PET window show numbers, not bars!");
+		Helper.log("REMEMBER: Sometimes the ship doesnt start shooting, then the bot is kinda stuck.");
+		Helper.log("REMEMBER: A check to prevent this from happening will be added soon.");
 	}
 
 	if (!client.isIngame()) {
