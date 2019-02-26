@@ -1123,7 +1123,7 @@ PET.prototype.manage = function() {
 	if (this.isDestroyed()) {
 		Helper.log("The PET is destroyed!");
 
-		if (!Config.getValue("auto_pet_revive")) {
+		if (Config.getValue("auto_pet_revive") === false) {
 			Helper.log("PET repair not allowed.");
 			return;
 		}
@@ -1490,7 +1490,7 @@ Hunter.prototype.huntNPCs = function() {
 				Helper.debug("Current number of hnsbars:", cur_num_hnsbars);
 
 				// When we use a PET we assume it's HP bar is visible.
-				var pet_activated = Config.getValue("manage_pet") && this.pet.isActivated();
+				var pet_activated = Config.getValue("manage_pet") === true && this.pet.isActivated();
 
 				if ((!pet_activated && cur_num_hnsbars == 0) || (pet_activated && cur_num_hnsbars == 1)) {
 					Helper.log("The NPC escaped.");
@@ -1600,7 +1600,7 @@ Scheduler.prototype.itsTimeToCheckTheClient = function() {
 }
 
 Scheduler.prototype.itsTimeToCheckThePET = function() {
-	var good_idea = !this.just_collected_something && Config.getValue("manage_pet");
+	var good_idea = !this.just_collected_something && Config.getValue("manage_pet") === true;
 	var necessary = this.pet_check_requested || this.pet_check_timer.hasExpired(Config.getValue("pet_check_timeout_in_min") * 60 * 1000);
 	return good_idea && necessary;
 }
@@ -1612,13 +1612,13 @@ Scheduler.prototype.itsTimeToCheckTheMap = function() {
 }
 
 Scheduler.prototype.itsTimeToCollectLoot = function() {
-	var good_idea = Config.getValue("collect_loot");
+	var good_idea = Config.getValue("collect_loot") === true;
 	var necessary = good_idea;
 	return good_idea && necessary;
 }
 
 Scheduler.prototype.itsTimerToHuntNPCs = function() {
-	var good_idea = Config.getValue("hunt_npcs");
+	var good_idea = Config.getValue("hunt_npcs") === true;
 	var necessary = good_idea;
 	return good_idea && necessary;
 }
@@ -1637,7 +1637,7 @@ Scheduler.prototype.checkTheConnection = function() {
 	
 	Helper.log("Client disconnected.");
 
-	if (!Config.getValue("auto_reconnect")) {
+	if (!Config.getValue("auto_reconnect") === true) {
 		Helper.log("Auto-reconnect disabled. Stopping the script...");
 		this.requestScriptStop();
 		return;
@@ -1655,7 +1655,7 @@ Scheduler.prototype.checkTheShipStatus = function() {
 
 	Helper.log("Ship destroyed.");
 
-	if (!Config.getValue("auto_ship_repair")) {
+	if (Config.getValue("auto_ship_repair") === false) {
 		Helper.log("Auto-ship-repair disabled. Stopping the script...");
 		this.requestScriptStop();
 		return;
@@ -1747,7 +1747,7 @@ Scheduler.prototype.runMainAlgorithm = function() {
 			this.moveTheShip();
 		}
 		
-		else if (!Config.getValue("collect_loot")) {
+		else if (Config.getValue("collect_loot") === false) {
 			// Sleep if we're moving and not looking for loot
 			Helper.sleep(2);
 		}
@@ -1773,23 +1773,23 @@ function main() {
 	// | Prepare the client and login |
 	// +------------------------------+
 
-	if (Config.getValue("collect_loot") && Config.getValue("hunt_npcs")) {
+	if (Config.getValue("collect_loot") === true && Config.getValue("hunt_npcs") === true) {
 		Helper.log("FATAL: The Loot Collector and NPC Hunter currently can't be used at the same time.");
 		return;
 	}
 
-	if (Config.getValue("collect_loot")) {
+	if (Config.getValue("collect_loot") === true) {
 		client.modifyResources2D();
 		Helper.log("REMEMBER: The loot collector currently only works in 2D mode.");
 	}
 
-	if (Config.getValue("hunt_npcs")) {
+	if (Config.getValue("hunt_npcs") === true) {
 		Hunter.registerResourceRules();
 		Helper.log("REMEMBER: The NPC hunter only works in 3D mode.");
 	}
 
 	if (!client.isIngame()) {
-		if (Config.getValue("auto_login")) {
+		if (Config.getValue("auto_login") === true) {
 			Helper.log("Logging in automatically");
 			client.autoLogin(Config.getValue("auto_login_username"), Config.getValue("auto_login_password"));
 			Helper.log("Logged in automatically.");
@@ -1799,7 +1799,7 @@ function main() {
 		}
 	}
 
-	else if (Config.getValue("collect_loot") || Config.getValue("hunt_npcs")) {
+	else if (Config.getValue("collect_loot") === true || Config.getValue("hunt_npcs") === true) {
 		// The client is already ingame. Reload to make sure ressource modification works.
 		Helper.log("Reloading to make the loot collector or the NPC hunter work...");
 
@@ -1835,7 +1835,7 @@ function main() {
 	// | Close unnecessary ingame windows |
 	// +----------------------------------+
 
-	if (Config.getValue("close_unnecessary_windows")) {
+	if (Config.getValue("close_unnecessary_windows") === true) {
 		Helper.log("Closing all windows.");
 		IngameWindow.closeAll();
 		Helper.log("All windows closed.");
@@ -1852,18 +1852,18 @@ function main() {
 	// | Open required ingame windows |
 	// +------------------------------+
 
-	if (Config.getValue("close_unnecessary_windows")) {
+	if (Config.getValue("close_unnecessary_windows") === true) {
 		Helper.log("Opening required windows. (Increase the window animation time if this fails).");
 
 		if (!minimap_window.beOpened()) {
 			Helper.log("FATAL! The bot was unable to open the Minimap window.");
 			return;
 		}
-		if (Config.getValue("manage_pet") && !pet_window.beOpened()) {
+		if (Config.getValue("manage_pet") === true && !pet_window.beOpened()) {
 			Helper.log("FATAL! The bot was unable to open the PET window.");
 			return;
 		}
-		if (Config.getValue("hunt_npcs") && !user_window.beOpened()) {
+		if (Config.getValue("hunt_npcs") === true && !user_window.beOpened()) {
 			Helper.log("DATAL! The bot was unable to open the User windows.");
 			return;
 		}
@@ -1889,7 +1889,7 @@ function main() {
 	// | Find and measure the PET window |
 	// +---------------------------------+
 
-	if (Config.getValue("manage_pet") && !pet.findWindow()) {
+	if (Config.getValue("manage_pet") === true && !pet.findWindow()) {
 		Helper.log("FATAL! The bot was unable to find the PET window. Stopping now.");
 		return;
 	}
