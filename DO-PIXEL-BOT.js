@@ -388,8 +388,8 @@ IngameWindow.prototype.isButtonCached = function() {
 	return this.cached_button.getX() != -1;
 }
 
-IngameWindow.prototype.isVisible = function() {
-	var screenshot = this.isWindowCached() ? this.takeScreenshot() : Browser.takeScreenshot();
+IngameWindow.prototype.isVisible = function(pretaken_screenshot) {
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : this.takeScreenshot();
 	return this.getIconMatch(screenshot).isValid();
 }
 
@@ -402,25 +402,28 @@ IngameWindow.prototype.clickButton = function() {
 	return true;
 }
 
-IngameWindow.prototype.beOpened = function() {
-	if (!this.isVisible()) {
+IngameWindow.prototype.beOpened = function(pretaken_screenshot) {
+	if (!this.isVisible(pretaken_screenshot)) {
 		return this.clickButton();
 	}
 	return true;
 }
 
-IngameWindow.prototype.beClosed = function() {
-	if (this.isVisible()) {
+IngameWindow.prototype.beClosed = function(pretaken_screenshot) {
+	if (this.isVisible(pretaken_screenshot)) {
 		return this.clickButton();
 	}
 	return true;
 }
 
 IngameWindow.prototype.takeScreenshot = function() {
-	if (!this.beOpened() || (!this.isWindowCached() && !this.cacheWindow())) {
-		Helper.debug("Opening and caching a window before taking a screenshot failed.");
+	if (!this.isWindowCached() && !this.cacheWindow()) {
+		Helper.debug("Caching a window before taking a screenshot failed.");
 		return Image(); // Empty, invalid image
 	}
+
+	// We have to assume the window has been opened before by calling beOpened().
+	// Calling beVisible() within this method causes recursion.
 	var screenshot = Browser.takeScreenshot();
 	return screenshot.copy(this.cached_window);
 }
