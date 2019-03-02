@@ -1459,8 +1459,9 @@ Hunter.prototype.huntNPCs = function() {
 			// We need to halt the ship if its moving by triggering the logout process.
 			// Starting to fire doesn't cancel the logout process though.
 			this.client.haltShip();
-			Helper.msleep(Config.getValue("window_animation_in_ms"));
+			Helper.msleep(Config.getValue("logout_cancelable_timeout_in_ms"));
 			this.client.haltShip();
+			Helper.msleep(Config.getValue("attack_delay_after_logout_cancelation_in_ms"));
 			continue;
 		}
 

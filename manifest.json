@@ -242,6 +242,22 @@
 						"default": 200,
 						"min": 50,
 						"max": 2000
+					},
+					{
+						"id": "logout_cancelable_timeout_in_ms",
+						"type": "integer",
+						"label": "Logout cancelable timeout in ms",
+						"default": 600,
+						"min": 320,
+						"max": 2000
+					},
+					{
+						"id": "attack_delay_after_logout_cancelation_in_ms",
+						"type": "integer",
+						"label": "Attack delay after logout cancelation in ms",
+						"default": 80,
+						"min": 20,
+						"max": 500
 					}
 				]
 			}
