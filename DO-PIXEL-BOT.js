@@ -1333,9 +1333,15 @@ Hunter.prototype.rememberOurHNSBar = function() {
 	// HSN bar := HP-Nano-Shield-Bar
 	var screenshot = Browser.takeScreenshot();
 	var matches = this.getNormalisedLeftHNSBarMatches(screenshot);
-	if (matches.length != 1) {
-		Helper.debug("Found", matches.length, "HSN bars. Expected 1.");
+	if (matches.length < 1) {
+		Helper.debug("Found no HSN bars. Expected 1.");
 		return false;
+	}
+	if (matches.length > 1) {
+		Helper.log("Found", matches.length, "HP bars. Expected 1. Make sure only your ships HP bar is visible.");
+		Helper.log("The bot will try to proceed using the best matching HP bar.");
+		Helper.debug("Which is:", matches[0]);
+		// return false;
 	}
 
 	// The player might not have a nano hull when starting the bot, but gets nano hull while botting.
@@ -1356,7 +1362,7 @@ Hunter.prototype.filterOurHNSBar = function(matches) {
 }
 
 Hunter.prototype.getNormalisedLeftHNSBarMatches = function(screenshot) {
-	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.98);
+	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.99);
 	for (var i = matches.length - 1; i >= 0; i--) {
 		var match = matches[i];
 		Helper.debug("HPBar Match:", match);
