@@ -1338,7 +1338,9 @@ Hunter.prototype.rememberOurHNSBar = function() {
 		return false;
 	}
 
-	this.cached_hnsbar = matches[0].getRect();
+	// The player might not have a nano hull when starting the bot, but gets nano hull while botting.
+	// Thats why we add some extra spacing to the top of the found rect descibing our HNSbars location.
+	this.cached_hnsbar = matches[0].getRect().marginsAdded(new Margins(0, 0, -5, 0));
 	return true;
 }
 
