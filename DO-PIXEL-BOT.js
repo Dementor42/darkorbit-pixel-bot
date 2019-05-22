@@ -357,6 +357,14 @@ function getClosestMatch(matches) {
 	return closest_match;
 }
 
+function distanceBetween(point1, point2) {
+	// If you read this, please ask the Botfather devs to add a Point.distanceTo(other_point) method.
+	var a = point1.getX() - point2.getX();
+	var b = point1.getY() - point2.getY();
+	var c = Math.sqrt(a*a + b*b);
+	return c;
+}
+
 // +--------------------------+
 // | Ingame Window Management |
 // +--------------------------+
@@ -1365,7 +1373,11 @@ Hunter.prototype.getNormalisedRightHNSBarMatches = function(screenshot) {
 	return matches;
 }
 
-Hunter.prototype.numOfOtherHNSBars = function() {
+Hunter.prototype.getOtherHNSBarsMatches = function() {
+	// TODO: Filter the PETs HNSbars. If not filtered the hunter might fly towards the PET.
+	// But that doesnt really matter, as the PET is most of the time near the attacked NPC anyway.
+	// More problematic is, that the hunter does not reliable detect when the attacked NPC escaped.
+
 	var screenshot = Browser.takeScreenshot();
 	var hpbar_left_matches = this.getNormalisedLeftHNSBarMatches(screenshot);
 	var hpbar_right_matches = this.getNormalisedRightHNSBarMatches(screenshot);
@@ -1392,7 +1404,7 @@ Hunter.prototype.numOfOtherHNSBars = function() {
 		}
 	}
 
-	return unique_matches.length;
+	return unique_matches;
 }
 
 Hunter.prototype.getCreditsScreenshot = function() {
@@ -1428,9 +1440,10 @@ Hunter.prototype.findClosestNPCs = function() {
 }
 
 Hunter.prototype.isActuallyAttacking = function() {
-	// Sometimes starting an attack doesnt work. We need this method to detect
-	// such situations.
-	return true; // TODO: Implement me!
+	// TODO: Evaluate whether we actually need this method anymore and implement if so.
+	// There was a time when starting to shoot at an NPC to far away would not start an
+	// attack. Looks like that doesnt happen anymore and thus this method might be obsolete.
+	return true;
 }
 
 Hunter.prototype.huntNPCs = function() {
@@ -1496,21 +1509,27 @@ Hunter.prototype.huntNPCs = function() {
 				break;
 			}
 
-			// Check whether the NPC has escaped
-			if (escape_check_timer.hasExpired(Config.getValue("escape_check_delay_in_secs") * 1000)) {
-				Helper.log("Checking whether the NPC escaped...");
-				escape_check_timer.restart();
+			// Detect whether the attacked NPC escaped.
+			var other_hnsbars_matches = this.getOtherHNSBarsMatches();
+			Helper.debug("Current number of hnsbars:", other_hnsbars_matches.length);
 
-				var cur_num_hnsbars = this.numOfOtherHNSBars();
-				Helper.debug("Current number of hnsbars:", cur_num_hnsbars);
+			if (other_hnsbars_matches.length == 0) {
+				Helper.log(this.hasCreditsEarned() ? "NPC killed." : "The NPC escaped.");
+				break;
+			}
+			
+			// Follow the attacked NPC if it's too far away from the player (center of the screen).
+			// Assume the only visible HNS bar is the NPC ones. The player ships and the PETs
+			// HSN bar must be filtered by the .getOtherHNSBarsMatches method.
+			var npc_hnsbars = other_hnsbars_matches[0];
+			var player_to_npc_distance = distanceBetween(npc_hnsbars.getRect().getCenter(), Browser.getRect().getCenter());
+			var shooting_range = Math.min(Browser.getSize().getWidth(), Browser.getSize().getHeight()) / 4;
+			Helper.debug("Player to NPC distance:", player_to_npc_distance, ">", shooting_range, "?");
 
-				// When we use a PET we assume it's HP bar is visible.
-				var pet_activated = Config.getValue("manage_pet") === true && this.pet.isActivated();
-
-				if ((!pet_activated && cur_num_hnsbars == 0) || (pet_activated && cur_num_hnsbars == 1)) {
-					Helper.log("The NPC escaped.");
-					break;
-				}
+			if (player_to_npc_distance > shooting_range) {
+				Helper.log("Flying towards the attacked NPC");
+				Browser.leftClick(npc_hnsbars.getRect().getCenter().pointAdded(new Point(0, 22)));
+				Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 			}
 
 			// Check whether we lost connection or got killed
