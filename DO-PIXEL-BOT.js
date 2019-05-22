@@ -1356,9 +1356,10 @@ Hunter.prototype.filterOurHNSBar = function(matches) {
 }
 
 Hunter.prototype.getNormalisedLeftHNSBarMatches = function(screenshot) {
-	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.999);
+	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.98);
 	for (var i = matches.length - 1; i >= 0; i--) {
 		var match = matches[i];
+		Helper.debug("HPBar Match:", match);
 		match.setRect(new Rect(match.getRect().getTopLeft(), HNSBAR_SIZE));
 	}
 	return matches;
