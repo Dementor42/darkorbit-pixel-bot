@@ -236,6 +236,14 @@
 						"max": 2000
 					},
 					{
+						"id": "logout_halt_delay_in_ms",
+						"type": "integer",
+						"label": "The time in ms it takes the ship to stop on logout",
+						"default": 150,
+						"min": 50,
+						"max": 1000
+					},
+					{
 						"id": "logout_cancelable_timeout_in_ms",
 						"type": "integer",
 						"label": "Logout cancelable timeout in ms",

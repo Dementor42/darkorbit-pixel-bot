@@ -952,7 +952,8 @@ Client.prototype.haltShip = function(ignore_cache) {
 	if (this.cached_logout_button.isValid()) {
 		// Triggering the logout process makes the ship stop moving instantly
 		Browser.leftClick(this.cached_logout_button.getRect().getCenter());
-		Helper.msleep(50); // It takes a moment for the ship to stop
+		// It takes a moment for the ship to stop
+		Helper.msleep(Config.getValue("logout_halt_delay_in_ms"));
 		return true;
 	}
 	return false;
@@ -1209,22 +1210,15 @@ Collector.prototype.findClosestLoot = function(prevent_animation_detection) {
 Collector.prototype.collectLoot = function() {
 	for (var loot_in_a_row = 0; loot_in_a_row < 20; loot_in_a_row++) {
 
-		if (loot_in_a_row == 0 && this.findClosestLoot().isValid()) {
-			this.client.haltShip(); // by triggering the logout process
-
-			// We assume that the logout will be canceled by the collector clicking loot
-			// or the navigator clicking on the minimap.
-			Helper.debug("Hope that the navigator cancels the logout-process.");
-		}
-
 		if (loot_in_a_row == 0) {
 			if (this.findClosestLoot().isValid()) {
 				// Initially found something. Stop the ship inflight and take another
 				// screenshot to get the loots precise position.
 				this.client.haltShip(); // by triggering the logout process
 
-				// The logout process will be canceled by either the collector
-				// clicking loot or the navigator clicking on the minimap.
+				// We assume that the logout will be canceled by the collector clicking loot
+				// or the navigator clicking on the minimap.
+				Helper.debug("Hope that the navigator cancels the logout-process.");
 			}
 			else {
 				Helper.debug("No loot found");
@@ -1238,8 +1232,9 @@ Collector.prototype.collectLoot = function() {
 		var closest_loot = this.findClosestLoot(loot_in_a_row > 0);
 		
 		if (!closest_loot.isValid()) {
-			// Nothing found this time. Cancel the triggered logout process when the
-			// ship has not been moved so far which would have canceled the process already.
+			// Could not find the loot again. If we found loot before, the logout process
+			// has already been canceled by the ship moving to the loot. However if
+			// loot_in_a_row is 0, we have to cancel the logout process explicitly.
 			if (loot_in_a_row == 0) {
 				// Cancel the logout process explicitly by moving
 				Helper.debug("Cancel logout process by flying somewhere.");
