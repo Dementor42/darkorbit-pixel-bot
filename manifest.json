@@ -209,6 +209,19 @@
 				]
 			},
 			{
+				"name": "General",
+				"options": [
+					{
+						"id": "client_check_timeout_in_seconds",
+						"type": "integer",
+						"label": "Timeout in seconds after checking the ship is connected and alive",
+						"default": 90,
+						"min": 30,
+						"max": 300
+					}
+				]
+			},
+			{
 				"name": "Advanced (be carefull)",
 				"options": [
 					{

@@ -1636,7 +1636,7 @@ Scheduler.prototype.doneMapChecking = function() {
 
 Scheduler.prototype.itsTimeToCheckTheClient = function() {
 	var good_idea = !this.just_collected_something;
-	var necessary = this.client_check_requested || this.client_check_timer.hasExpired(Config.getValue("general_check_timeout_in_min") * 60 * 1000);
+	var necessary = this.client_check_requested || this.client_check_timer.hasExpired(Config.getValue("client_check_timeout_in_seconds") * 1000);
 	return good_idea && necessary;
 }
 
