@@ -926,8 +926,11 @@ Client.prototype.getIngame = function() {
 		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.94);
 		
 		if (start_button_match.isValid()) {
+			// The start buttons match score is configured low, so the chance that
+			// the game start succeeds is increased. However, a low score results
+			// in the bot clicking faulty matches multiple times.
 			Browser.leftClick(start_button_match.getRect().getCenter());
-			Helper.log("Game start button clicked.");
+			Helper.log("Tried to click the game start button.");
 		} else {
 			Helper.log("Start button not found. Checking again in 3 seconds.");
 		}
