@@ -1889,7 +1889,8 @@ function main() {
 
 	// At this point the PET window is closed. So we won't confuse the HP bar
 	// shown in the PET window with the ships HP bar.
-	if (!hunter.rememberOurHNSBar()) {
+	// TODO: reenable that the HSN bar would always be remembered.
+	if (Config.getValue("hunt_npcs") === true && !hunter.rememberOurHNSBar()) {
 		Helper.log("FATAL! The bot was unable to find the ships HP bar! Make sure you're not on low HP.");
 		return;
 	}
