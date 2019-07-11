@@ -25,10 +25,6 @@ var REPAIR_ON_STAGE_TPL = new Image(CLIENT_TPL_DIR + "repair_on_stage_option.png
 var DISCONNECTED_TPL = new Image(CLIENT_TPL_DIR + "disconnected.png");
 var RECONNECTING_TPL = new Image(CLIENT_TPL_DIR + "reconnecting.png");
 
-var HPBAR_LEFT_TPL = new Image(CLIENT_TPL_DIR + "hpbar_left.png");
-var HPBAR_RIGHT_TPL = new Image(CLIENT_TPL_DIR + "hpbar_right.png");
-var HNSBAR_SIZE = new Size(51, 14);
-
 var PET_REPAIR_BTN_TPL = new Image(PET_TPL_DIR + "repair_button.png");
 var PET_PLAY_BTN_TPL = new Image(PET_TPL_DIR + "play_button.png");
 var PET_STOP_BTN_TPL = new Image(PET_TPL_DIR + "stop_button.png");
@@ -1285,7 +1281,6 @@ var Hunter = function(pet, navi, client, user_window) {
 	this.cached_x2_ammo_match = new Match();
 	this.cached_x3_ammo_match = new Match();
 	this.cached_x4_ammo_match = new Match();
-	this.cached_hnsbar = new Rect(); // TODO: maybe move this into a dedicated Ship class
 	this.last_ammo_icon_image = new Image();
 }
 
@@ -1329,90 +1324,6 @@ Hunter.prototype.startFiringLasers = function() {
 	}
 	Browser.leftClick(ammo_match.getRect().getCenter());
 	return true;
-}
-
-Hunter.prototype.rememberOurHNSBar = function() {
-	// When calling this method the PET must not be activated and the ship must not be on low HP.
-	// HSN bar := HP-Nano-Shield-Bar
-	var screenshot = Browser.takeScreenshot();
-	var matches = this.getNormalisedLeftHNSBarMatches(screenshot);
-	if (matches.length < 1) {
-		Helper.debug("Found no HSN bars. Expected 1.");
-		return false;
-	}
-	if (matches.length > 1) {
-		Helper.log("Found", matches.length, "HP bars. Expected 1. Make sure only your ships HP bar is visible.");
-		Helper.log("The bot will try to proceed using the best matching HP bar.");
-		Helper.debug("Which is:", matches[0]);
-		// return false;
-	}
-
-	// The player might not have a nano hull when starting the bot, but gets nano hull while botting.
-	// Thats why we add some extra spacing to the top of the found rect descibing our HNSbars location.
-	this.cached_hnsbar = matches[0].getRect().marginsAdded(new Margins(0, 0, -5, 0));
-	return true;
-}
-
-Hunter.prototype.filterOurHNSBar = function(matches) {
-	var filtered_matches = [];
-	for (var i = matches.length - 1; i >= 0; i--) {
-		var match = matches[i];
-		if (!this.cached_hnsbar.contains(match.getRect().getCenter())) {
-			filtered_matches.push(match);
-		}
-	}
-	return filtered_matches;
-}
-
-Hunter.prototype.getNormalisedLeftHNSBarMatches = function(screenshot) {
-	var matches = Vision.findMatches(screenshot, HPBAR_LEFT_TPL, 0.99);
-	for (var i = matches.length - 1; i >= 0; i--) {
-		var match = matches[i];
-		Helper.debug("HPBar Match:", match);
-		match.setRect(new Rect(match.getRect().getTopLeft(), HNSBAR_SIZE));
-	}
-	return matches;
-}
-
-Hunter.prototype.getNormalisedRightHNSBarMatches = function(screenshot) {
-	var matches = Vision.findMatches(screenshot, HPBAR_RIGHT_TPL, 0.999);
-	for (var i = matches.length - 1; i >= 0; i--) {
-		var match = matches[i];
-		var left = match.getRect().getRight() - HNSBAR_SIZE.getWidth();
-		var top = match.getRect().getTop();
-		match.setRect(new Rect(new Point(left, top), HNSBAR_SIZE));
-	}
-	return matches;
-}
-
-Hunter.prototype.getOtherHNSBarsMatches = function() {
-	var screenshot = Browser.takeScreenshot();
-	var hpbar_left_matches = this.getNormalisedLeftHNSBarMatches(screenshot);
-	var hpbar_right_matches = this.getNormalisedRightHNSBarMatches(screenshot);
-	var all_matches = hpbar_left_matches.concat(hpbar_right_matches);
-	var filtered_matches = this.filterOurHNSBar(all_matches);
-	var unique_matches = [];
-
-	for (var a = 0; a < filtered_matches.length; a++) {
-		var a_match = filtered_matches[a];
-		var is_unique = true;
-
-		for (var u = 0; u < unique_matches.length; u++) {
-			var u_match = unique_matches[u];
-
-			// Filter duplicated matches
-			if (a_match.getRect().intersects(u_match.getRect())) {
-				is_unique = false;
-				break;
-			}
-		}
-
-		if (is_unique) {
-			unique_matches.push(a_match);
-		}
-	}
-
-	return unique_matches;
 }
 
 Hunter.prototype.findSelection = function() {
