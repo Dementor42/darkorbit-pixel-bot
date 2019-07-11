@@ -58,10 +58,16 @@ var NPC_MIN_HSV = new Color(0, 200, 200, "hsv");
 var NPC_MAX_HSV = new Color(3, 255, 255, "hsv");
 var NPC_BLOB_TPL = new BlobTpl(300, /*1400*/ 2800);
 
+var TARGET_MIN_HSV = new Color(300, 255, 255, "hsv");
+var TARGET_MAX_HSV = new Color(300, 255, 255, "hsv");
+var TARGET_BLOB_TPL = new BlobTpl(1000, 1400);
+
 var X1_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x1.png");
 var X2_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x2.png");
 var X3_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x3.png");
 var X4_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x4.png");
+var XX_AMMO_TPL_TO_BTN_BORDER_OFFSET = new Point(-1, -9);
+var XX_AMMO_TPL_SIZE = new Size(38, 38);
 
 var NORMAL_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "normal_close_button.png");
 var LARGER_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "larger_close_button.png");
@@ -1275,54 +1281,53 @@ var Hunter = function(pet, navi, client, user_window) {
 	this.client = client;
 	this.user_window = user_window;
 	this.last_credits_image = new Image();
-	this.cached_x1_ammo = new Point(-1, -1);
-	this.cached_x2_ammo = new Point(-1, -1);
-	this.cached_x3_ammo = new Point(-1, -1);
-	this.cached_x4_ammo = new Point(-1, -1);
+	this.cached_x1_ammo_match = new Match();
+	this.cached_x2_ammo_match = new Match();
+	this.cached_x3_ammo_match = new Match();
+	this.cached_x4_ammo_match = new Match();
 	this.cached_hnsbar = new Rect(); // TODO: maybe move this into a dedicated Ship class
+	this.last_ammo_icon_image = new Image();
 }
 
-Hunter.prototype.cacheAmmoPosition = function(ammo_tpl, current_and_fallback) {
-	var ammo_position = current_and_fallback;
+Hunter.prototype.cacheAmmoMatch = function(ammo_tpl, current) {
 	var screenshot = Browser.takeScreenshot();
+	var ammo_match = current;
 
-	if (current_and_fallback.getX() == -1) {
+	if (!ammo_match.isValid()) {
 		Helper.debug("Selected ammo not cached yet.");
 
 		var ammo_match = Vision.findMatch(screenshot, ammo_tpl, 0.99);
-		if (ammo_match.isValid()) {
-			ammo_position = ammo_match.getRect().getCenter();
-		} else {
+		if (!ammo_match.isValid()) {
 			Helper.debug("Couldn't find and cache selected ammo.");
 		}
 	}
-	return ammo_position;
+	return ammo_match;
 }
 
-Hunter.prototype.getAmmoPosition = function() {
+Hunter.prototype.getAmmoMatch = function() {
 	switch (Config.getValue("hunter_ammo")) {
 		case "x4":
-			this.cached_x4_ammo = this.cacheAmmoPosition(X4_AMMO_TPL, this.cached_x4_ammo);
-			return this.cached_x4_ammo;
+			this.cached_x4_ammo_match = this.cacheAmmoMatch(X4_AMMO_TPL, this.cached_x4_ammo_match);
+			return this.cached_x4_ammo_match;
 		case "x3":
-			this.cached_x3_ammo = this.cacheAmmoPosition(X3_AMMO_TPL, this.cached_x3_ammo);
-			return this.cached_x3_ammo;
+			this.cached_x3_ammo_match = this.cacheAmmoMatch(X3_AMMO_TPL, this.cached_x3_ammo_match);
+			return this.cached_x3_ammo_match;
 		case "x2":
-			this.cached_x2_ammo = this.cacheAmmoPosition(X2_AMMO_TPL, this.cached_x2_ammo);
-			return this.cached_x2_ammo;
+			this.cached_x2_ammo_match = this.cacheAmmoMatch(X2_AMMO_TPL, this.cached_x2_ammo_match);
+			return this.cached_x2_ammo_match;
 		default: // x1
-			this.cached_x1_ammo = this.cacheAmmoPosition(X1_AMMO_TPL, this.cached_x1_ammo);
-			return this.cached_x1_ammo;
+			this.cached_x1_ammo_match = this.cacheAmmoMatch(X1_AMMO_TPL, this.cached_x1_ammo_match);
+			return this.cached_x1_ammo_match;
 	}
 }
 
 Hunter.prototype.startFiringLasers = function() {
-	var ammo_position = this.getAmmoPosition();
-	if (ammo_position.getX() == -1) {
+	var ammo_match = this.getAmmoMatch();
+	if (!ammo_match.isValid()) {
 		Helper.log("Unable to start shooting.");
 		return false;
 	}
-	Browser.leftClick(ammo_position);
+	Browser.leftClick(ammo_match.getRect().getCenter());
 	return true;
 }
 
@@ -1381,10 +1386,6 @@ Hunter.prototype.getNormalisedRightHNSBarMatches = function(screenshot) {
 }
 
 Hunter.prototype.getOtherHNSBarsMatches = function() {
-	// TODO: Filter the PETs HNSbars. If not filtered the hunter might fly towards the PET.
-	// But that doesnt really matter, as the PET is most of the time near the attacked NPC anyway.
-	// More problematic is, that the hunter does not reliable detect when the attacked NPC escaped.
-
 	var screenshot = Browser.takeScreenshot();
 	var hpbar_left_matches = this.getNormalisedLeftHNSBarMatches(screenshot);
 	var hpbar_right_matches = this.getNormalisedRightHNSBarMatches(screenshot);
@@ -1414,6 +1415,23 @@ Hunter.prototype.getOtherHNSBarsMatches = function() {
 	return unique_matches;
 }
 
+Hunter.prototype.findSelection = function() {
+	var screenshot = Browser.takeScreenshot();
+	var isolated = screenshot.isolateColorRange(TARGET_MIN_HSV, TARGET_MAX_HSV);
+	var matches = Vision.findBlobs(isolated, TARGET_BLOB_TPL);
+	if (matches.length == 0) {
+		return new Match();
+	}
+	return matches[0];
+}
+
+Hunter.prototype.findClosestNPCs = function() {
+	var screenshot = Browser.takeScreenshot();
+	var isolated = screenshot.isolateColorRange(NPC_MIN_HSV, NPC_MAX_HSV);
+	var matches = Vision.findBlobs(isolated, NPC_BLOB_TPL);
+	return getClosestMatch(matches);
+}
+
 Hunter.prototype.getCreditsScreenshot = function() {
 	var screenshot = this.user_window.takeScreenshot();
 	var credits_image = screenshot.copy(USER_CREDITS_OFFSET);
@@ -1439,125 +1457,148 @@ Hunter.prototype.hasCreditsEarned = function() {
 	return pixel_equality < 1;
 }
 
-Hunter.prototype.findClosestNPCs = function() {
+Hunter.prototype.getAmmoIconImage = function() {
+	var ammo_match = this.getAmmoMatch();
+	if (!ammo_match.isValid()) return new Image(); // invalid image
+
+	var ammo_real_tl = ammo_match.getRect().getTopLeft().pointAdded(XX_AMMO_TPL_TO_BTN_BORDER_OFFSET);
+	var ammo_subrect = new Rect(ammo_real_tl, XX_AMMO_TPL_SIZE);
+
 	var screenshot = Browser.takeScreenshot();
-	var isolated = screenshot.isolateColorRange(NPC_MIN_HSV, NPC_MAX_HSV);
-	var matches = Vision.findBlobs(isolated, NPC_BLOB_TPL);
-	return getClosestMatch(matches);
+	return screenshot.copy(ammo_subrect);
 }
 
-Hunter.prototype.isActuallyAttacking = function() {
-	// TODO: Evaluate whether we actually need this method anymore and implement if so.
-	// There was a time when starting to shoot at an NPC to far away would not start an
-	// attack. Looks like that doesnt happen anymore and thus this method might be obsolete.
+Hunter.prototype.rememberAmmoIconImage = function() {
+	var ammo_icon_image = this.getAmmoIconImage();
+	if (ammo_icon_image.isNull()) {
+		Helper.debug("The NPC hunter was unable to take a screenshot of the ammo icon.");
+		return false;
+	}
+	this.last_ammo_icon_image = ammo_icon_image;
 	return true;
+}
+
+Hunter.prototype.ammoIconImageChanged = function() {
+	var new_ammo_icon_image = this.getAmmoIconImage();
+	var pixel_equality = new_ammo_icon_image.pixelEquality(this.last_ammo_icon_image);
+	return pixel_equality < 1;
 }
 
 Hunter.prototype.huntNPCs = function() {
-	// Algorithm:
-	// We check whether NPCs are around.
-	// If there are and we are moving, we stop and look for NPCs again.
-	// If we found an NPC and are not moving, we select it.
-	// Then we remember how much XP we have. Later checking the XP will tell us whether we killed the NPC.
-	// Now we start firing.
-	// We keep firing as long as we have no XP earned or there is one HP/Nano/Shield bar less visible.
-	//
-	// "Issues":
-	// - The Hunter will assume the NPC escaped when our PET leaves the screen.
-	// - It's hard to filter the the PETs HP/Nano/Shield bar though.
-	// - We filter our own HNS bar by remembering it's location when starting the bot.
-	// - When our ship gets hit by an Witz-Rocket our HSN bar might move and the Hunter will no longer work.
+	var npc_match = this.findClosestNPCs();
+	if (!npc_match.isValid()) {
+		//Helper.debug("No NPCs found.");
+		return false;
+	}
 
-	for (var npcs_in_a_row = 0; npcs_in_a_row < 20; npcs_in_a_row++) {
+	var ship_was_moving = this.navi.shipIsMoving();
 
-		var npc_match = this.findClosestNPCs();
-		if (!npc_match.isValid()) {
-			return false;
-		}
-
-		if (npcs_in_a_row == 0 && npc_match.isValid() && this.navi.shipIsMoving()) {
-			// We need to halt the ship if its moving by triggering the logout process.
-			// Starting to fire doesn't cancel the logout process though.
-			this.client.haltShip();
-			Helper.msleep(Config.getValue("logout_cancelable_timeout_in_ms"));
-			this.client.haltShip();
-			Helper.msleep(Config.getValue("attack_delay_after_logout_cancelation_in_ms"));
-			continue;
-		}
-
+	while (true) {
+		// Try to select the NPC. This might fail when our ship and the NPC are both moving.
+		// However, if the ship was not moving, we consider the selection attempt a success.
+		// Because if the bot can't select an NPC reliably while standing still, it won't be
+		// able to select and attack NPCs at all due to low hardware specs.
 		Browser.leftClick(npc_match.getRect().getCenter());
-		Helper.log("Found and selected an NPC.");
 
-		this.rememberCredits();
-		Helper.debug("Remembered credits.");
+		if (!ship_was_moving) {
+			Helper.log("NPC selected."); // Keep the "." in contrast to the "!" below
+			break;
+		}
 
-		this.startFiringLasers();
-		Helper.log("Started firing lasers.");
+		// We need to give the marker time to fade in, otherwise the algorithm won't notice
+		// the NPC and it will instantly look for new NPCs. This can lead to a situation where
+		// hunter is rapidly changing targets without attacking them.
+		Helper.msleep(Config.getValue("marker_fade_in_delay_in_ms"));
 
-		// Make sure health and connection are checked after some time
-		var checks_timer = new Timer();
-		checks_timer.start();
+		if (this.findSelection().isValid()) {
+			Helper.log("NPC selected!"); // Keep the "!" in contrast to the "." above
+			break;
+		}
 
-		// Check every few seconds whether the NPC excaped. (expensive check)
-		var escape_check_timer = new Timer();
-		escape_check_timer.start();
+		// The ship and the NPC probably moved. Get a new match.
+		npc_match = this.findClosestNPCs();
 
-		while (true) {
-
-			// Check whether the NPC has been killed
-			if (this.hasCreditsEarned()) {
-				Helper.log("NPC killed.");
-				break;
-			}
-
-			// Check whether the ship failed to attack
-			if (!this.isActuallyAttacking() && !this.hasCreditsEarned()) {
-				Helper.log("The ship has failed to start attacking.");
-				break;
-			}
-
-			// Detect whether the attacked NPC escaped.
-			var other_hnsbars_matches = this.getOtherHNSBarsMatches();
-			Helper.debug("Current number of hnsbars:", other_hnsbars_matches.length);
-
-			if (other_hnsbars_matches.length == 0) {
-				Helper.log(this.hasCreditsEarned() ? "NPC killed." : "The NPC escaped.");
-				break;
-			}
-			
-			// Follow the attacked NPC if it's too far away from the player (center of the screen).
-			// Assume the only visible HNS bar is the NPC ones. The player ships and the PETs
-			// HSN bar must be filtered by the .getOtherHNSBarsMatches method.
-			var npc_hnsbars = other_hnsbars_matches[0];
-			var player_to_npc_distance = distanceBetween(npc_hnsbars.getRect().getCenter(), Browser.getRect().getCenter());
-			var shooting_range = Math.min(Browser.getSize().getWidth(), Browser.getSize().getHeight()) / 4;
-			Helper.debug("Player to NPC distance:", player_to_npc_distance, ">", shooting_range, "?");
-
-			if (player_to_npc_distance > shooting_range) {
-				Helper.log("Flying towards the attacked NPC");
-				Browser.leftClick(npc_hnsbars.getRect().getCenter().pointAdded(new Point(0, 22)));
-				Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
-			}
-
-			// Check whether we lost connection or got killed
-			if (checks_timer.hasExpired(20 * 1000)) {
-				Helper.debug("We were shooting an NPC for 20 seconds. Time to do some checks.");
-				checks_timer.restart();
-
-				if (this.client.isDestroyed() || this.client.isDisconnected()) {
-					Helper.log("Got interrupted hunting an NPC.");
-					return true;
-				}
-				continue;
-			}
-
-			Helper.log("Still shooting the NPC...");
-			Helper.msleep(100);
+		if (!npc_match.isValid()) {
+			Helper.debug("The NPC disappeared.");
+			return true;
 		}
 	}
 
-	Helper.debug("Finding more than 20 NPCs in one spot is unlikely. We might be stuck somehow.");
-	return true;
+	// Remember how many credits we have. If the credits go up we know we killed the NPC.
+	this.rememberCredits();
+
+	// Start the attack
+	this.startFiringLasers();
+
+	// If the ship was not moving, the marker had no time to fade in since we selected
+	// the already attacked NPC. We need to give the marker time to fade in, otherwise
+	// the algorithm will consider the NPC escaped and it will instantly look for new
+	// NPCs. This can lead to a situation where NPCs are no longer attacked properly
+	// and the ship is changing targets rapidly without killing them.
+	// NOTE: We wait half the markes fade in delay to speed up the hunter when the
+	// ship is stationary fighting NPCs. We assume enough time passed until the hunter
+	// checks whether the enemy escaped. In the "NPC select loop" above, we need to
+	// wait the full duration, because the hunter needs to know whether we managed to
+	// actually selected the found NPC.
+	if (!ship_was_moving) {
+		Helper.msleep(Config.getValue("marker_fade_in_delay_in_ms") / 2);
+	}
+
+	// Under strange conditions the bot might fail to properly attack the selected NPC.
+	// The bot will check that edge case from time to time.
+	// This can also happen when the hunter selects an NPC which then leaves the screen
+	// but reapears before the hunter managed to select different NPC.
+	var edge_case_check_timer = new Timer();
+	edge_case_check_timer.start();
+
+	while (true) {
+
+		// Check whether the NPC has been killed
+		if (this.hasCreditsEarned()) {
+			Helper.log("NPC killed.");
+			return true;
+		}
+
+		// Check whether the NPC escaped
+		var selection_match = this.findSelection();
+		if (!selection_match.isValid()) {
+			// It takes about 500ms for the credits to update. To inform the user about whether
+			// an NPC got killed or escaped, we would have to wait atleast these 500 ms to make
+			// sure the display got update properly. I decided against this to save the 500 ms.
+			Helper.log("NPC killed or escaped.");
+			return true;
+		}
+
+		// Chase the NPC if necessary
+		var player_to_npc_distance = distanceBetween(selection_match.getRect().getCenter(), Browser.getRect().getCenter());
+		var shooting_range = Math.min(Browser.getSize().getWidth(), Browser.getSize().getHeight()) / 4;
+
+		if (player_to_npc_distance > shooting_range) {
+			Helper.log("Chasing the attacked NPC");
+			Browser.leftClick(selection_match.getRect().getCenter().pointAdded(new Point(0, 22)));
+			Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
+		}
+
+		// Check whether we're still attacking. We consider the ship no longer attacking if the
+		// ammo icon isn't animated. In order to check this we take an image of it and compare
+		// it to an image take one second later.
+		if (edge_case_check_timer.hasExpired(5 * 1000)) {
+			this.rememberAmmoIconImage();
+			Helper.msleep(1000);
+
+			if (!this.ammoIconImageChanged() && this.findSelection().isValid()) {
+				Helper.log("The ship stopped shooting the NPC. Restarting the attack.");
+				this.startFiringLasers();
+			}
+			edge_case_check_timer.restart();
+		}
+
+		Helper.log("Still shooting the NPC...");
+		Helper.msleep(250);
+	}
+
+	// Fallback
+	return false;
 }
 
 Hunter.registerResourceRules = function() {
@@ -1575,6 +1616,7 @@ Hunter.registerResourceRules = function() {
 		Browser.blockResource("spacemap/3d/textures/lordakia-boss_diffuse_128.atf");
 		Browser.blockResource("spacemap/3d/meshes/lordakia-boss.awd");
 		Browser.replaceResource("replacementShips", NPC_SWF_REPLACEMENT_URL);
+		Browser.replaceResource("bpsecure.com/spacemap/graphics/ui/ui.swf", "https://pbdo-bot.net/magic/2D/ui.swf");
 	}
 }
 
@@ -1591,6 +1633,8 @@ var Scheduler = function(client, minimap, pet, collector, hunter, navi) {
 	this.navi = navi;
 
 	this.just_collected_something = false;
+	this.just_hunted_an_npc = false;
+
 	this.script_stop_requested = false;
 
 	this.client_check_requested = true; // true => check on startup
@@ -1647,7 +1691,7 @@ Scheduler.prototype.itsTimeToCheckThePET = function() {
 }
 
 Scheduler.prototype.itsTimeToCheckTheMap = function() {
-	var good_idea = !this.just_collected_something && Config.getValue("do_global_nav");
+	var good_idea = !this.just_collected_something && !this.just_hunted_an_npc && Config.getValue("do_global_nav");
 	var necessary = this.map_check_requested;
 	return good_idea && necessary;
 }
@@ -1665,8 +1709,9 @@ Scheduler.prototype.itsTimerToHuntNPCs = function() {
 }
 
 Scheduler.prototype.itsTimeToMoveTheShip = function() {
-	var good_idea = this.just_collected_something || !this.navi.shipIsMoving();
-	var necessary = good_idea;
+	// If we just collected loot or killed an NPC we want to look for more.
+	var good_idea = !this.just_collected_something && !this.just_hunted_an_npc;
+	var necessary = !this.navi.shipIsMoving();
 	return good_idea && necessary;
 }
 
@@ -1739,9 +1784,15 @@ Scheduler.prototype.checkForLoot = function() {
 	Helper.msleep(Config.getValue("collector_timeout_in_ms"));
 }
 
+Scheduler.prototype.checkForNPCs = function() {
+	this.just_hunted_an_npc = this.hunter.huntNPCs();
+	Helper.msleep(Config.getValue("hunter_timeout_in_ms"));
+}
+
 Scheduler.prototype.moveTheShip = function() {
 	Helper.log("Flying to a random location on the current map...");
 	this.navi.flyToRandomLocation();
+	Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 }
 
 Scheduler.prototype.runMainAlgorithm = function() {
@@ -1779,17 +1830,16 @@ Scheduler.prototype.runMainAlgorithm = function() {
 		}
 
 		if (this.itsTimerToHuntNPCs()) {
-			Helper.debug("Time to hunt NPCs...");
-			this.hunter.huntNPCs();
+			//Helper.debug("Time to hunt NPCs...");
+			this.checkForNPCs();
 		}
 		
 		if (this.itsTimeToMoveTheShip()) {
 			Helper.debug("Time to move the ship...");
 			this.moveTheShip();
 		}
-		
-		else if (Config.getValue("collect_loot") === false) {
-			// Sleep if we're moving and not looking for loot
+		else if (Config.getValue("collect_loot") === false && Config.getValue("hunt_npcs") === false) {
+			// Sleep if we're moving and not looking for loot or hunting NPCs
 			Helper.sleep(2);
 		}
 	}
@@ -1827,11 +1877,6 @@ function main() {
 	if (Config.getValue("hunt_npcs") === true) {
 		Hunter.registerResourceRules();
 		Helper.log("REMEMBER: To turn your settings to low.");
-
-		// TODO: Remove this once the issues has been fixed
-		Helper.log("REMEMBER: Make the PET window show numbers, not bars!");
-		Helper.log("REMEMBER: Sometimes the ship doesnt start shooting, then the bot is kinda stuck.");
-		Helper.log("REMEMBER: A check to prevent this from happening will be added soon.");
 	}
 
 	if (!client.isIngame()) {
@@ -1885,14 +1930,6 @@ function main() {
 		Helper.log("Closing all windows.");
 		IngameWindow.closeAll();
 		Helper.log("All windows closed.");
-	}
-
-	// At this point the PET window is closed. So we won't confuse the HP bar
-	// shown in the PET window with the ships HP bar.
-	// TODO: reenable that the HSN bar would always be remembered.
-	if (Config.getValue("hunt_npcs") === true && !hunter.rememberOurHNSBar()) {
-		Helper.log("FATAL! The bot was unable to find the ships HP bar! Make sure you're not on low HP.");
-		return;
 	}
 
 	// +------------------------------+
