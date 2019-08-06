@@ -238,29 +238,28 @@ var MAP_GRAPH = {
 	__3_8: { __3_6: 1, __3_7: 1 }
 };
 
-// TODO: store arrays of Points instead of arrays of arrays
-var GATE_TL   = [ [  17,  17 ], [  19,  19 ], [  21,  21 ], [  24,  24 ], [  27,  27 ], [  32,  32 ], [  39,  39 ], [  49,  49 ], [  65,  65 ] ];
-var GATE_TR   = [ [ 167,  17 ], [ 184,  19 ], [ 204,  21 ], [ 230,  24 ], [ 263,  27 ], [ 307,  32 ], [ 369,  39 ], [ 461,  49 ], [ 615,  65 ] ];
-var GATE_BL   = [ [  17, 103 ], [  19, 114 ], [  21, 126 ], [  24, 142 ], [  27, 163 ], [  32, 190 ], [  39, 229 ], [  49, 286 ], [  65, 382 ] ];
-var GATE_BR   = [ [ 167, 103 ], [ 184, 114 ], [ 204, 125 ], [ 230, 142 ], [ 263, 163 ], [ 307, 190 ], [ 369, 229 ], [ 461, 286 ], [ 615, 382 ] ];
-var GATE_TRO  = [ [ 149,  12 ], [ 164,  14 ], [ 182,  15 ], [ 205,  17 ], [ 234,  20 ], [ 274,  24 ], [ 329,  29 ], [ 411,  36 ], [ 549,  49 ] ];
-var GATE_CT   = [ [  90,  12 ], [  99,  14 ], [ 110,  15 ], [ 124,  17 ], [ 141,  20 ], [ 165,  24 ], [ 199,  29 ], [ 249,  36 ], [ 332,  49 ] ];
-var GATE_CR   = [ [ 171,  53 ], [ 189,  59 ], [ 210,  65 ], [ 236,  74 ], [ 270,  84 ], [ 315,  99 ], [ 379, 119 ], [ 474, 149 ], [ 632, 199 ] ];
-var GATE_CB   = [ [  90, 108 ], [  99, 119 ], [ 110, 132 ], [ 124, 149 ], [ 141, 170 ], [ 165, 199 ], [ 199, 239 ], [ 249, 299 ], [ 332, 399 ] ];
-var GATE_CL   = [ [  12,  53 ], [  14,  59 ], [  15,  65 ], [  17,  74 ], [  20,  84 ], [  24,  99 ], [  29, 119 ], [  36, 149 ], [  49, 199 ] ];
-var GATE_CC   = [ [  94,  60 ], [ 104,  66 ], [ 115,  74 ], [ 130,  83 ], [ 149,  95 ], [ 174, 111 ], [ 209, 134 ], [ 261, 167 ], [ 349, 254 ] ];
-var GATE_44T  = [ [ 126,   5 ], [ 139,   5 ], [ 154,   6 ], [ 174,   7 ], [ 199,   8 ], [ 232,  10 ], [ 279,  12 ], [ 350,  17 ], [ 445,  22 ] ];
-var GATE_44L  = [ [  30,  60 ], [  34,  66 ], [  37,  74 ], [  42,  83 ], [  49,  95 ], [  57, 111 ], [  69, 134 ], [  87, 168 ], [ 115, 224 ] ];
-var GATE_44B  = [ [ 126, 113 ], [ 139, 124 ], [ 154, 138 ], [ 174, 156 ], [ 199, 178 ], [ 232, 208 ], [ 279, 250 ], [ 350, 314 ], [ 465, 417 ] ];
-var GATE_44TI = [ [  98,  53 ], [ 108,  58 ], [ 120,  65 ], [ 135,  73 ], [ 155,  84 ], [ 181,  98 ], [ 218, 118 ], [ 272, 149 ], [ 364, 198 ] ];
-var GATE_44LI = [ [  86,  60 ], [  95,  66 ], [ 105,  74 ], [ 119,  83 ], [ 136,  95 ], [ 159, 111 ], [ 191, 134 ], [ 240, 168 ], [ 319, 224 ] ];
-var GATE_44BI = [ [  97,  63 ], [ 107,  69 ], [ 119,  77 ], [ 134,  88 ], [ 153, 101 ], [ 180, 119 ], [ 217, 142 ], [ 271, 179 ], [ 363, 239 ] ];
-var GATE_45T  = [ [ 126,   5 ], [ 139,   5 ], [ 154,   6 ], [ 174,   7 ], [ 199,   8 ], [ 232,  10 ], [ 279,  12 ], [ 349,  16 ], [ 465,  22 ] ];
-var GATE_45L  = [ [  30,  60 ], [  34,  66 ], [  37,  74 ], [  42,  83 ], [  49,  95 ], [  57, 111 ], [  69, 134 ], [  86, 167 ], [ 115, 224 ] ];
-var GATE_45B  = [ [ 126, 115 ], [ 139, 127 ], [ 154, 141 ], [ 174, 159 ], [ 199, 182 ], [ 232, 212 ], [ 279, 254 ], [ 349, 319 ], [ 445, 426 ] ];
-var GATE_45TI = [ [ 112,  27 ], [ 124,  30 ], [ 137,  34 ], [ 155,  38 ], [ 177,  44 ], [ 207,  51 ], [ 249,  62 ], [ 311,  77 ], [ 415, 104 ] ];
-var GATE_45LI = [ [  54,  59 ], [  60,  65 ], [  66,  72 ], [  75,  82 ], [  86,  94 ], [ 100, 109 ], [ 121, 132 ], [ 151, 165 ], [ 202, 220 ] ];
-var GATE_45BI = [ [ 112,  93 ], [ 124, 102 ], [ 137, 114 ], [ 155, 128 ], [ 177, 146 ], [ 207, 171 ], [ 249, 206 ], [ 311, 257 ], [ 415, 344 ] ];
+var GATE_TL   = [new Point( 17,  17), new Point( 19,  19), new Point( 21,  21), new Point( 24,  24), new Point( 27,  27), new Point( 32,  32), new Point( 39,  39), new Point( 49,  49), new Point( 65,  65)];
+var GATE_TR   = [new Point(167,  17), new Point(184,  19), new Point(204,  21), new Point(230,  24), new Point(263,  27), new Point(307,  32), new Point(369,  39), new Point(461,  49), new Point(615,  65)];
+var GATE_BL   = [new Point( 17, 103), new Point( 19, 114), new Point( 21, 126), new Point( 24, 142), new Point( 27, 163), new Point( 32, 190), new Point( 39, 229), new Point( 49, 286), new Point( 65, 382)];
+var GATE_BR   = [new Point(167, 103), new Point(184, 114), new Point(204, 125), new Point(230, 142), new Point(263, 163), new Point(307, 190), new Point(369, 229), new Point(461, 286), new Point(615, 382)];
+var GATE_TRO  = [new Point(149,  12), new Point(164,  14), new Point(182,  15), new Point(205,  17), new Point(234,  20), new Point(274,  24), new Point(329,  29), new Point(411,  36), new Point(549,  49)];
+var GATE_CT   = [new Point( 90,  12), new Point( 99,  14), new Point(110,  15), new Point(124,  17), new Point(141,  20), new Point(165,  24), new Point(199,  29), new Point(249,  36), new Point(332,  49)];
+var GATE_CR   = [new Point(171,  53), new Point(189,  59), new Point(210,  65), new Point(236,  74), new Point(270,  84), new Point(315,  99), new Point(379, 119), new Point(474, 149), new Point(632, 199)];
+var GATE_CB   = [new Point( 90, 108), new Point( 99, 119), new Point(110, 132), new Point(124, 149), new Point(141, 170), new Point(165, 199), new Point(199, 239), new Point(249, 299), new Point(332, 399)];
+var GATE_CL   = [new Point( 12,  53), new Point( 14,  59), new Point( 15,  65), new Point( 17,  74), new Point( 20,  84), new Point( 24,  99), new Point( 29, 119), new Point( 36, 149), new Point( 49, 199)];
+var GATE_CC   = [new Point( 94,  60), new Point(104,  66), new Point(115,  74), new Point(130,  83), new Point(149,  95), new Point(174, 111), new Point(209, 134), new Point(261, 167), new Point(349, 254)];
+var GATE_44T  = [new Point(126,   5), new Point(139,   5), new Point(154,   6), new Point(174,   7), new Point(199,   8), new Point(232,  10), new Point(279,  12), new Point(350,  17), new Point(445,  22)];
+var GATE_44L  = [new Point( 30,  60), new Point( 34,  66), new Point( 37,  74), new Point( 42,  83), new Point( 49,  95), new Point( 57, 111), new Point( 69, 134), new Point( 87, 168), new Point(115, 224)];
+var GATE_44B  = [new Point(126, 113), new Point(139, 124), new Point(154, 138), new Point(174, 156), new Point(199, 178), new Point(232, 208), new Point(279, 250), new Point(350, 314), new Point(465, 417)];
+var GATE_44TI = [new Point( 98,  53), new Point(108,  58), new Point(120,  65), new Point(135,  73), new Point(155,  84), new Point(181,  98), new Point(218, 118), new Point(272, 149), new Point(364, 198)];
+var GATE_44LI = [new Point( 86,  60), new Point( 95,  66), new Point(105,  74), new Point(119,  83), new Point(136,  95), new Point(159, 111), new Point(191, 134), new Point(240, 168), new Point(319, 224)];
+var GATE_44BI = [new Point( 97,  63), new Point(107,  69), new Point(119,  77), new Point(134,  88), new Point(153, 101), new Point(180, 119), new Point(217, 142), new Point(271, 179), new Point(363, 239)];
+var GATE_45T  = [new Point(126,   5), new Point(139,   5), new Point(154,   6), new Point(174,   7), new Point(199,   8), new Point(232,  10), new Point(279,  12), new Point(349,  16), new Point(465,  22)];
+var GATE_45L  = [new Point( 30,  60), new Point( 34,  66), new Point( 37,  74), new Point( 42,  83), new Point( 49,  95), new Point( 57, 111), new Point( 69, 134), new Point( 86, 167), new Point(115, 224)];
+var GATE_45B  = [new Point(126, 115), new Point(139, 127), new Point(154, 141), new Point(174, 159), new Point(199, 182), new Point(232, 212), new Point(279, 254), new Point(349, 319), new Point(445, 426)];
+var GATE_45TI = [new Point(112,  27), new Point(124,  30), new Point(137,  34), new Point(155,  38), new Point(177,  44), new Point(207,  51), new Point(249,  62), new Point(311,  77), new Point(415, 104)];
+var GATE_45LI = [new Point( 54,  59), new Point( 60,  65), new Point( 66,  72), new Point( 75,  82), new Point( 86,  94), new Point(100, 109), new Point(121, 132), new Point(151, 165), new Point(202, 220)];
+var GATE_45BI = [new Point(112,  93), new Point(124, 102), new Point(137, 114), new Point(155, 128), new Point(177, 146), new Point(207, 171), new Point(249, 206), new Point(311, 257), new Point(415, 344)];
 
 var JGATE_POS = {
 	__1_1: { __1_2: GATE_BR },
@@ -724,17 +723,15 @@ Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
 Navigator.prototype.jumpTo = function(dest_intern_mapname) {
 	var current_intern_mapname = this.minimap.getInternMapname(false); // Do not use the cached mapname
 	var mm_level = this.minimap.getLevel(true); // Use the cached level
-	var dest_jgate_arr;
+	var dest_jgate_pos;
 	
 	try {
-		dest_jgate_arr = JGATE_POS[current_intern_mapname][dest_intern_mapname][mm_level];		
+		dest_jgate_pos = JGATE_POS[current_intern_mapname][dest_intern_mapname][mm_level];		
 	} catch (err) {
 		Helper.debug("Getting the JGATE pos for", current_intern_mapname, dest_intern_mapname, mm_level, "failed");
 		Helper.debug("^", err);
 		return false;
 	}
-
-	var dest_jgate_pos = new Point(dest_jgate_arr[0], dest_jgate_arr[1]);
 
 	var rdm = convertInternToExternMapname(dest_intern_mapname);
 	Helper.log("Trying to travel to", rdm);
@@ -813,8 +810,7 @@ Navigator.prototype.getThePositionOfARandomGateOnTheCurrentMap = function() {
 	var keys = Object.keys(nearby_gates);
 	var random_gate = nearby_gates[keys[keys.length * Math.random() << 0]];
 
-	var gate_pos_array = random_gate[mm_level];
-	var gate_pos = new Point(gate_pos_array[0], gate_pos_array[1]);
+	var gate_pos = random_gate[mm_level];
 	return gate_pos;
 }
 
@@ -844,11 +840,10 @@ Navigator.prototype.getPosOfNextDemilitarizedZone = function() {
 
 	// Provide a valid value we can compare other gates positions to.
 	// This value (index 0) is ignored by the for loop (> instead of >=).
-	var closest_gate_pos = new Point(gate_positions[keys[0]][mm_level][0], gate_positions[keys[0]][mm_level][1]);
+	var closest_gate_pos = gate_positions[keys[0]][mm_level];
 
 	for (var i = keys.length - 1; i > 0; i--) {
-		// TODO: store positions as points, wtf
-		var current_gate_pos = new Point(gate_positions[keys[i]][mm_level][0], gate_positions[keys[i]][mm_level][1]);
+		var current_gate_pos = gate_positions[keys[i]][mm_level];
 		
 		var old_dist = distanceBetween(ship_pos, closest_gate_pos);
 		var new_dist = distanceBetween(ship_pos, current_gate_pos);
