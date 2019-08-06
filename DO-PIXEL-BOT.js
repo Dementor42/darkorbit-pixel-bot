@@ -6,6 +6,7 @@ var TEMPLATE_DIR = "templates/";
 var CLIENT_TPL_DIR = TEMPLATE_DIR + "client/";
 var MINIMAP_DIR = TEMPLATE_DIR + "minimap/";
 var PET_TPL_DIR = TEMPLATE_DIR + "pet/";
+var SHIP_TPL_DIR = TEMPLATE_DIR + "ship/";
 var ITEMS_TPL_DIR = TEMPLATE_DIR + "items/";
 var WINDOWS_DIR = TEMPLATE_DIR + "windows/";
 var MM_LEVEL_DIR = MINIMAP_DIR + "levels/";
@@ -41,9 +42,6 @@ var PASSIVEMODE_ENTRY_TPL = new Image(PET_TPL_DIR + "passivemode_entry.png");
 var GUARDMODE_ENTRY_TPL = new Image(PET_TPL_DIR + "guardmode_entry.png");
 var COLLECTOR_ENTRY_TPL = new Image(PET_TPL_DIR + "collector_entry.png");
 
-var PET_WINDOW_CORNER_TPL = new Image(PET_TPL_DIR + "window_corner.png");
-var PET_WINDOW_SIZE = new Size(272, 320); // Including the gear dropdown menu with max gears
-
 var LOOT_SWF_URL = "https://pbdo-bot.net/magic/2D/circle_ffff00.swf";
 var LOOT_MIN_HSV = new Color(55, 200, 200, "hsv");
 var LOOT_MAX_HSV = new Color(70, 255, 255, "hsv");
@@ -65,6 +63,12 @@ var X4_AMMO_TPL = new Image(ITEMS_TPL_DIR + "x4.png");
 var XX_AMMO_TPL_TO_BTN_BORDER_OFFSET = new Point(-1, -9);
 var XX_AMMO_TPL_SIZE = new Size(38, 38);
 
+const REP1_TPL = new Image(ITEMS_TPL_DIR + "REP1.png");
+const REP2_TPL = new Image(ITEMS_TPL_DIR + "REP2.png");
+const REP3_TPL = new Image(ITEMS_TPL_DIR + "REP3.png");
+const REP4_TPL = new Image(ITEMS_TPL_DIR + "REP4.png");
+const REP_TPLS = [REP1_TPL, REP2_TPL, REP3_TPL, REP4_TPL];
+
 var NORMAL_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "normal_close_button.png");
 var LARGER_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "larger_close_button.png");
 var ASSEMBLY_CLOSE_BUTTON_TPL = new Image(WINDOWS_DIR + "assembly_close_button.png");
@@ -72,14 +76,26 @@ var CLOSE_BUTTON_TPLS = [NORMAL_CLOSE_BUTTON_TPL, LARGER_CLOSE_BUTTON_TPL, ASSEM
 
 var MINIMAP_BUTTON_TPL = new Image(WINDOWS_DIR + "minimap_button.png");
 var MINIMAP_ICON_TPL = new Image(WINDOWS_DIR + "minimap_icon.png");
+
 var PET_BUTTON_TPL = new Image(WINDOWS_DIR + "pet_button.png");
 var PET_ICON_TPL = new Image(WINDOWS_DIR + "pet_icon.png");
+var PET_WINDOW_CORNER_TPL = new Image(PET_TPL_DIR + "window_corner.png");
+var PET_WINDOW_SIZE = new Size(272, 320); // Including the gear dropdown menu with max gears
+
+var SHIP_BUTTON_TPL = new Image(WINDOWS_DIR + "ship_button.png");
+var SHIP_ICON_TPL = new Image(WINDOWS_DIR + "ship_icon.png");
+var SHIP_WINDOW_SIZE = new Size(224, 112);
+var SHIP_HPBAR_GREEN_TPL = new Image(SHIP_TPL_DIR + "hpbar_green.png");
+var SHIP_HPBAR_EMPTY_TPL = new Image(SHIP_TPL_DIR + "hpbar_empty.png");
+var SHIP_HPBARS_SUBRECT = new Rect(new Point(31, 36), new Size(64, 15));
+
 var USER_BUTTON_TPL = new Image(WINDOWS_DIR + "user_button.png");
 var USER_ICON_TPL = new Image(WINDOWS_DIR + "user_icon.png");
-
 var USER_WINDOW_SIZE = new Size(224, 108);
-
 var USER_CREDITS_OFFSET = new Rect(new Point(114, 30), new Size(108, 16)); // Relative to the user windows borders
+
+var MM_POSMARK_V_TPL = new Image(MINIMAP_DIR + "posmark_v.png");
+var MM_POSMARK_H_TPL = new Image(MINIMAP_DIR + "posmark_h.png");
 
 var MM_LEVEL_1_TPL = new Image(MM_LEVEL_DIR + "1_tpl.png");
 var MM_LEVEL_2_TPL = new Image(MM_LEVEL_DIR + "2_tpl.png");
@@ -222,6 +238,7 @@ var MAP_GRAPH = {
 	__3_8: { __3_6: 1, __3_7: 1 }
 };
 
+// TODO: store arrays of Points instead of arrays of arrays
 var GATE_TL   = [ [  17,  17 ], [  19,  19 ], [  21,  21 ], [  24,  24 ], [  27,  27 ], [  32,  32 ], [  39,  39 ], [  49,  49 ], [  65,  65 ] ];
 var GATE_TR   = [ [ 167,  17 ], [ 184,  19 ], [ 204,  21 ], [ 230,  24 ], [ 263,  27 ], [ 307,  32 ], [ 369,  39 ], [ 461,  49 ], [ 615,  65 ] ];
 var GATE_BL   = [ [  17, 103 ], [  19, 114 ], [  21, 126 ], [  24, 142 ], [  27, 163 ], [  32, 190 ], [  39, 229 ], [  49, 286 ], [  65, 382 ] ];
@@ -276,38 +293,6 @@ var JGATE_POS = {
 	__9_3: { __9_1: GATE_BL, __9_4: GATE_BR },
 	__9_4: { __9_2: GATE_BL, __9_3: GATE_TL }
 };
-
-var JGATE_POS = {
-	__1_1: { __1_2: GATE_BR },
-	__1_2: { __1_1: GATE_TL, __1_3: GATE_TR, __1_4: GATE_BR },
-	__1_3: { __1_2: GATE_BL, __1_4: GATE_BR, __2_3: GATE_TR },
-	__1_4: { __1_2: GATE_TL, __1_3: GATE_TR, __4_1: GATE_CR, __3_4: GATE_BR },
-	__4_1: { __1_4: GATE_CL, __4_2: GATE_TR, __4_3: GATE_BR, __4_4: GATE_CC },
-	__2_1: { __2_2: GATE_BL },
-	__2_2: { __2_1: GATE_TR, __2_3: GATE_BL, __2_4: GATE_BR },
-	__2_3: { __2_2: GATE_TR, __2_4: GATE_BR, __1_3: GATE_BL },
-	__2_4: { __2_2: GATE_TL, __2_3: GATE_TR, __4_2: GATE_CB, __3_3: GATE_BL },
-	__4_2: { __2_4: GATE_CT, __4_1: GATE_BL, __4_3: GATE_BR, __4_4: GATE_CC },
-	__3_1: { __3_2: GATE_TL },
-	__3_2: { __3_1: GATE_BR, __3_3: GATE_TR, __3_4: GATE_TL },
-	__3_3: { __3_2: GATE_BR, __3_4: GATE_BL, __2_4: GATE_TL },
-	__3_4: { __3_2: GATE_BR, __3_3: GATE_TR, __4_3: GATE_CT, __1_4: GATE_TL },
-	__4_3: { __3_4: GATE_CR, __4_1: GATE_BL, __4_2: GATE_TL, __4_4: GATE_CC },
-	__4_4: { __4_1: GATE_44LI, __4_2: GATE_44TI, __4_3: GATE_44BI, __1_5: GATE_44L, __2_5: GATE_44T, __3_5: GATE_44B },
-	__4_5: { __5_1: GATE_45BI, __1_5: GATE_45L, __2_5: GATE_45T, __3_5: GATE_45B },
-	__1_5: { __4_4: GATE_CR, __4_5: GATE_BR, __1_6: GATE_TL, __1_7: GATE_BL },
-	__1_6: { __1_5: GATE_BR, __1_8: GATE_BL },
-	__1_7: { __1_5: GATE_TR, __1_8: GATE_TL },
-	__1_8: { __1_6: GATE_TR, __1_7: GATE_BR },
-	__2_5: { __4_4: GATE_BL, __4_5: GATE_BR, __2_6: GATE_TL, __2_7: GATE_TR },
-	__2_6: { __2_5: GATE_BL, __2_8: GATE_TR },
-	__2_7: { __2_5: GATE_BL, __2_8: GATE_TR },
-	__2_8: { __2_6: GATE_BL, __2_7: GATE_BR },
-	__3_5: { __4_4: GATE_TL, __4_5: GATE_TRO, __3_6: GATE_BL, __3_7: GATE_BR },
-	__3_6: { __3_5: GATE_TL, __3_8: GATE_BR },
-	__3_7: { __3_5: GATE_BL, __3_8: GATE_BR },
-	__3_8: { __3_6: GATE_BL, __3_7: GATE_TL }
-}
 
 var OPTIMISTIC_ACCELERATION_TIME_IN_MS = 500;
 var SAFE_ACCELERATION_TIME_IN_MS = 2000;
@@ -488,7 +473,7 @@ IngameWindow.closeAll = function() {
 var Minimap = function() {
 	this.cached_level = undefined;
 	this.cached_position = new Point(-1, -1);
-	this.cached_intern_mapname = undefined;
+	this.cached_intern_mapname = "";
 };
 
 Minimap.prototype.calculateTelemetry = function(screenshot) {
@@ -553,21 +538,36 @@ Minimap.prototype.leftClick = function(coords) {
 	Browser.leftClick(realcoords);
 }
 
-Minimap.prototype.getMinimapImage = function() {
+Minimap.prototype.getOuterImage = function() {
 	var screenshot = Browser.takeScreenshot();
-	var position = this.getPosition();
 	var outer_mm = this.getOuterRect();
+	return screenshot.copy(outer_mm);
+}
 
-	return screenshot.copy(new Rect(
-		position.getX(),
-		position.getY(),
-		outer_mm.getWidth(),
-		outer_mm.getHeight()
-	));
+Minimap.prototype.getInnerImage = function() {
+	var screenshot = Browser.takeScreenshot();
+	var inner_mm = this.getInnerRect();
+	return screenshot.copy(inner_mm);
+}
+
+Minimap.prototype.getInnerImageIsolate = function() {
+	var inner_image = this.getInnerImage();
+
+	// When the minimaps background image is turned off in the games settings,
+	// its roughtly black. rgb(7, 7, 7) to be precise. Unfortunately this value
+	// may differ minimaly on different devices and operating systems.
+	// For more robustness we manipulate the image in a way that all black-ish
+	// spots are marked white and everything else black. (yeah, its reversed).
+
+	var min_hsv = new Color(0, 0, 0, "hsv");
+	var max_hsv = new Color(180, 255, 30, "hsv");
+	var isolate = inner_image.isolateColorRange(min_hsv, max_hsv);
+
+	return isolate;
 }
 
 Minimap.prototype.getVelocityImage = function() {
-	return this.getMinimapImage().copy(new Rect(
+	return this.getOuterImage().copy(new Rect(
 		VELOCITY_MARGIN.x,
 		VELOCITY_MARGIN.y,
 		VELOCITY_SIZE.getWidth(),
@@ -576,7 +576,7 @@ Minimap.prototype.getVelocityImage = function() {
 }
 
 Minimap.prototype.getMapnameImage = function() {
-	return this.getMinimapImage().copy(new Rect(
+	return this.getOuterImage().copy(new Rect(
 		0,
 		MAPNAME_MARGIN_TOP,
 		MAPNAME_WIDTH,
@@ -608,6 +608,23 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 
 	Helper.debug("No mapname matched.");
 	return "";
+}
+
+Minimap.prototype.isBackgroundVisible = function() {
+	var inner_image = this.getInnerImageIsolate(); // !! using the isolate
+	var white_image = new Image(inner_image.getSize(), new Color("white"));
+	var equality = inner_image.pixelEquality(white_image);
+	return equality < 0.92;
+}
+
+Minimap.prototype.getShipPosition = function() {
+	var inner_image = this.getInnerImageIsolate(); // !! using the isolate
+	var posmark_v_match = Vision.findMatch(inner_image, MM_POSMARK_V_TPL, 0.99);
+	var posmark_h_match = Vision.findMatch(inner_image, MM_POSMARK_H_TPL, 0.99);
+	return new Point(
+		posmark_v_match.getRect().getCenter().getX(),
+		posmark_h_match.getRect().getCenter().getY()
+	);
 }
 
 // +-----------------------------+
@@ -767,20 +784,91 @@ Navigator.prototype.travelTo = function(dest_coords) {
 }
 
 Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
+	Helper.debug("Flying somewhere quickly...");
 	var timer = new Timer();
-	timer.start();
+	timer.start();	
 
 	while (this.shipIsMoving()) {
 		if (timer.hasExpired(max_flight_time_in_ms)) {
 			return false; // max flight time reached
 		}
-
-		Helper.debug("Flying somewhere quickly...");
 		Helper.msleep(100);
 	}
 
 	Helper.debug("Destination reached, quick flight done.");
 	return true; // Ship reached destination
+}
+
+/*
+Navigator.prototype.getThePositionOfARandomGateOnTheCurrentMap = function() {
+	var current_intern_mapname = this.minimap.getInternMapname(false); // Do not use the cached mapname
+	var mm_level = this.minimap.getLevel(true); // Use the cached level
+
+	if (current_intern_mapname === "" || mm_level === -1) {
+		Helper.debug("Unable to get a random gate on the current map.");
+		return new Point(-1, -1);
+	}
+
+	var nearby_gates = JGATE_POS[current_intern_mapname];	
+	var keys = Object.keys(nearby_gates);
+	var random_gate = nearby_gates[keys[keys.length * Math.random() << 0]];
+
+	var gate_pos_array = random_gate[mm_level];
+	var gate_pos = new Point(gate_pos_array[0], gate_pos_array[1]);
+	return gate_pos;
+}
+
+Navigator.prototype.travelToRandomGateOnCurrentMap = function() {
+	var gate_pos = this.getThePositionOfARandomGateOnTheCurrentMap();
+	if (gate_pos.getX() === -1) {
+		Helper.debug("Unable to travel to a random gate on the current map.");
+		return false;
+	}
+	this.travelTo(gate_pos);
+	return true;
+}
+*/
+
+Navigator.prototype.getPosOfNextDemilitarizedZone = function() {
+	var current_intern_mapname = this.minimap.getInternMapname(false);
+	var mm_level = this.minimap.getLevel(true);
+	var ship_pos = this.minimap.getShipPosition();
+
+	if (current_intern_mapname === "" || mm_level === -1) {
+		Helper.debug("Unable to get the position of the next demilitarized zone.");
+		return new Point(-1, -1);
+	}
+
+	var gate_positions = JGATE_POS[current_intern_mapname];	
+	var keys = Object.keys(gate_positions);
+
+	// Provide a valid value we can compare other gates positions to.
+	// This value (index 0) is ignored by the for loop (> instead of >=).
+	var closest_gate_pos = new Point(gate_positions[keys[0]][mm_level][0], gate_positions[keys[0]][mm_level][1]);
+
+	for (var i = keys.length - 1; i > 0; i--) {
+		// TODO: store positions as points, wtf
+		var current_gate_pos = new Point(gate_positions[keys[i]][mm_level][0], gate_positions[keys[i]][mm_level][1]);
+		
+		var old_dist = distanceBetween(ship_pos, closest_gate_pos);
+		var new_dist = distanceBetween(ship_pos, current_gate_pos);
+		
+		if (new_dist < old_dist) {
+			closest_gate_pos = current_gate_pos;
+		}
+	}
+
+	return closest_gate_pos;
+}
+
+Navigator.prototype.travelToNextDemilitarizedZone = function() {
+	var gate_pos = this.getPosOfNextDemilitarizedZone();
+	if (gate_pos.getX() === -1) {
+		Helper.debug("Unable to travel to the next demilitarized zone.");
+		return false;
+	}
+	this.travelTo(gate_pos);
+	return true;
 }
 
 // +------------------+
@@ -962,6 +1050,134 @@ Client.prototype.haltShip = function(ignore_cache) {
 		return true;
 	}
 	return false;
+}
+
+// +----------------+
+// | Ship Managment |
+// +----------------+
+
+var Ship = function(ship_window, navi) {
+	this.ship_window = ship_window;
+	this.navi = navi;
+}
+
+Ship.prototype.getHPDisplayImage = function() {
+	var screenshot = this.ship_window.takeScreenshot();
+	return screenshot.copy(SHIP_HPBARS_SUBRECT);
+}
+
+Ship.prototype.getGreenHPBarsMatches = function() {
+	var hp_image = this.getHPDisplayImage();
+	return Vision.findMatches(hp_image, SHIP_HPBAR_GREEN_TPL, 0.99);
+}
+
+Ship.prototype.getEmptyHPBarsMatches = function() {
+	var hp_image = this.getHPDisplayImage();
+	return Vision.findMatches(hp_image, SHIP_HPBAR_EMPTY_TPL, 0.99);	
+}
+
+Ship.prototype.isHPDisplayConfigured = function() {
+	return this.getGreenHPBarsMatches().length + this.getEmptyHPBarsMatches().length > 0;
+}
+
+Ship.prototype.configureHPDisplay = function() {
+	if (this.isHPDisplayConfigured()) {
+		Helper.debug("Ship HP display was already correctly configured.");
+		return true;
+	}
+	var ship_window_icon_match = this.ship_window.getIconMatch();
+	if (!ship_window_icon_match.isValid()) {
+		Helper.debug("Could not get ship window icon match to configure the hp display.");
+		return false;
+	}
+	// Click the ship windows hp display to change it from numbers to bars.
+	Browser.leftClick(ship_window.getTopLeft().pointAdded(SHIP_HPBARS_SUBRECT.getCenter()));
+	return true;
+}
+
+Ship.prototype.numSeventhHPBars = function() {
+	return this.getGreenHPBarsMatches().length;
+}
+
+Ship.prototype.isOnLowHP = function() {
+	return this.numSeventhHPBars() < Config.getValue("low_hp_threshold");
+}
+
+Ship.prototype.isOnCriticalHP = function() {
+	return this.numSeventhHPBars() < Config.getValue("critical_hp_threshold");
+}
+
+Ship.prototype.findAndCacheRepairCPU = function() {
+	var screenshot = Browser.takeScreenshot();
+	this.rep_match = new Match(); // Default
+	
+	for (var i = 0; i < REP_TPLS.length; i++) {
+		var rep_tpl = REP_TPLS[i];
+		this.rep_match = Vision.findMatch(screenshot, rep_tpl, 0.999);
+
+		if (this.rep_match.isValid()) {
+			Helper.debug("Repair robot CPU found and cached!");
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Ship.prototype.triggerRepair = function() {
+	if (this.rep_match === undefined) {
+		this.findAndCacheRepairCPU()
+	}
+	if (!this.rep_match.isValid()) {
+		Helper.debug("No repair CPU in the hotbar. Hope, that the user has an auto-repair CPU.");
+		return false;
+	}
+	leftClickAndPreventHover(this.rep_match.getRect().getCenter());
+	return true;
+}
+
+Ship.prototype.waitForFullHP = function() {
+	var last_hp_display_image = this.getHPDisplayImage();
+
+	var timer = new Timer();
+	timer.start();
+
+	const timeout = 45;
+	const timeout_in_ms = timeout * 1000;
+
+	while (!timer.hasExpired(timeout_in_ms)) {
+
+		var current_seventh_hpbars = this.numSeventhHPBars();
+		if (current_seventh_hpbars === 7) {
+			return true; // Ship now has full HP
+		}
+
+		Helper.log("Waiting for full HP...", current_seventh_hpbars + "/7");
+		Helper.sleep(2);
+
+		var current_hp_display_image = this.getHPDisplayImage();
+		var pixel_equality = current_hp_display_image.pixelEquality(last_hp_display_image);
+
+		if (pixel_equality < 1) {
+			Helper.debug("The ships HP changed, resetting the timer.");
+			timer.restart();
+		} else {
+			// Find and click the user repair CPU if visible. (most user dont rely on this as the have the auto-repair CPU).
+			this.triggerRepair();
+		}
+	}
+
+	Helper.log("No longer waiting for full HP. The ships HP did no change within the last", timeout, "seconds");
+	return false;
+}
+
+Ship.prototype.repairOnNextGate = function() {
+	if (!this.navi.travelToNextDemilitarizedZone()) {
+		Helper.debug("Unable to repair on next gate.");
+		return false;
+	}
+	this.waitForFullHP();
+	return true;
 }
 
 // +---------------+
@@ -1271,10 +1487,11 @@ Collector.prototype.collectLoot = function() {
 // | NPC Hunter |
 // +------------+
 
-var Hunter = function(pet, navi, client, user_window) {
+var Hunter = function(pet, navi, client, ship, user_window) {
 	this.pet = pet;
 	this.navi = navi;
 	this.client = client;
+	this.ship = ship;
 	this.user_window = user_window;
 	this.last_credits_image = new Image();
 	this.cached_x1_ammo_match = new Match();
@@ -1316,7 +1533,7 @@ Hunter.prototype.getAmmoMatch = function() {
 	}
 }
 
-Hunter.prototype.startFiringLasers = function() {
+Hunter.prototype.toggleAttack = function() {
 	var ammo_match = this.getAmmoMatch();
 	if (!ammo_match.isValid()) {
 		Helper.log("Unable to start shooting.");
@@ -1395,11 +1612,15 @@ Hunter.prototype.ammoIconImageChanged = function() {
 	return pixel_equality < 1;
 }
 
+Hunter.prototype.NOTHING_ATTACKED = 0;
+Hunter.prototype.ATTACKED_SOMETHING = 1;
+Hunter.prototype.CRITICAL_SHIP_STATE = 2;
+
 Hunter.prototype.huntNPCs = function() {
 	var npc_match = this.findClosestNPCs();
 	if (!npc_match.isValid()) {
 		//Helper.debug("No NPCs found.");
-		return false;
+		return this.NOTHING_ATTACKED;
 	}
 
 	var ship_was_moving = this.navi.shipIsMoving();
@@ -1431,7 +1652,7 @@ Hunter.prototype.huntNPCs = function() {
 
 		if (!npc_match.isValid()) {
 			Helper.debug("The NPC disappeared.");
-			return true;
+			return this.ATTACKED_SOMETHING;
 		}
 	}
 
@@ -1439,7 +1660,7 @@ Hunter.prototype.huntNPCs = function() {
 	this.rememberCredits();
 
 	// Start the attack
-	this.startFiringLasers();
+	this.toggleAttack();
 
 	// If the ship was not moving, the marker had no time to fade in since we selected
 	// the already attacked NPC. We need to give the marker time to fade in, otherwise
@@ -1461,13 +1682,22 @@ Hunter.prototype.huntNPCs = function() {
 	// but reapears before the hunter managed to select different NPC.
 	var edge_case_check_timer = new Timer();
 	edge_case_check_timer.start();
+	const EDGE_CASE_CHECK_TIMER_TIMEOUT = 5 * 1000;
+
+	var hp_check_timer = new Timer();
+	hp_check_timer.start();
+	const HP_CHECK_TIMER_TIMEOUT = 3 * 1000;
+
+	var life_check_timer = new Timer();
+	life_check_timer.start();
+	const LIFE_CHECK_TIMER_TIMEOUT = 15 * 1000;
 
 	while (true) {
 
 		// Check whether the NPC has been killed
 		if (this.hasCreditsEarned()) {
 			Helper.log("NPC killed.");
-			return true;
+			return this.ATTACKED_SOMETHING;
 		}
 
 		// Check whether the NPC escaped
@@ -1477,7 +1707,7 @@ Hunter.prototype.huntNPCs = function() {
 			// an NPC got killed or escaped, we would have to wait atleast these 500 ms to make
 			// sure the display got update properly. I decided against this to save the 500 ms.
 			Helper.log("NPC killed or escaped.");
-			return true;
+			return this.ATTACKED_SOMETHING;
 		}
 
 		// Chase the NPC if necessary
@@ -1490,17 +1720,43 @@ Hunter.prototype.huntNPCs = function() {
 			Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 		}
 
+		if (hp_check_timer.hasExpired(HP_CHECK_TIMER_TIMEOUT)) {
+			Helper.debug("Performing a HP check while hunting.");
+
+			if (this.ship.isOnCriticalHP()) {
+				// Stop attacking to allow the ship to heal.
+				this.toggleAttack();
+				Helper.log("Hunting stopped because the ship is on critical HP.");
+				// Indicate that we hunted an NPC, this will make the scheduler perform a HP check
+				return this.CRITICAL_SHIP_STATE;
+			}
+
+			hp_check_timer.restart();
+		}
+
+		if (life_check_timer.hasExpired(LIFE_CHECK_TIMER_TIMEOUT)) {
+			Helper.debug("Performing a aliveness and connection check while hunting.");
+			if (this.client.isDestroyed() || this.client.isDisconnected()) {
+				return this.CRITICAL_SHIP_STATE;
+			}
+
+			life_check_timer.restart();
+		}
+
 		// Check whether we're still attacking. We consider the ship no longer attacking if the
 		// ammo icon isn't animated. In order to check this we take an image of it and compare
 		// it to an image take one second later.
-		if (edge_case_check_timer.hasExpired(5 * 1000)) {
+		if (edge_case_check_timer.hasExpired(EDGE_CASE_CHECK_TIMER_TIMEOUT)) {
+			Helper.debug("Performing an edge case check while hunting.");
+
 			this.rememberAmmoIconImage();
 			Helper.msleep(1000);
 
 			if (!this.ammoIconImageChanged() && this.findSelection().isValid()) {
 				Helper.log("The ship stopped shooting the NPC. Restarting the attack.");
-				this.startFiringLasers();
+				this.toggleAttack();
 			}
+
 			edge_case_check_timer.restart();
 		}
 
@@ -1509,7 +1765,7 @@ Hunter.prototype.huntNPCs = function() {
 	}
 
 	// Fallback
-	return false;
+	return this.NOTHING_ATTACKED;
 }
 
 Hunter.registerResourceRules = function() {
@@ -1535,28 +1791,31 @@ Hunter.registerResourceRules = function() {
 // | Task Scheduler |
 // +----------------+
 
-var Scheduler = function(client, minimap, pet, collector, hunter, navi) {
+var Scheduler = function(client, minimap, pet, collector, hunter, navi, ship) {
 	this.client = client;
 	this.minimap = minimap;
 	this.pet = pet;
 	this.collector = collector;
 	this.hunter = hunter;
 	this.navi = navi;
+	this.ship = ship;
 
 	this.just_collected_something = false;
 	this.just_hunted_an_npc = false;
 
 	this.script_stop_requested = false;
-
 	this.client_check_requested = true; // true => check on startup
 	this.pet_check_requested = true; // true => check on startup
 	this.map_check_requested = true; // true => check on startup
+	this.ship_hp_check_requested = true; // true => check on startup
 
 	this.client_check_timer = new Timer();
 	this.pet_check_timer = new Timer();
+	this.ship_hp_check_timer = new Timer();
 
 	this.client_check_timer.start();
 	this.pet_check_timer.start();
+	this.ship_hp_check_timer.start();
 }
 
 Scheduler.prototype.requestScriptStop = function() {
@@ -1575,6 +1834,10 @@ Scheduler.prototype.requestMapCheck = function() {
 	this.map_check_requested = true;
 }
 
+Scheduler.prototype.requestShipHPCheck = function() {
+	this.ship_hp_check_requested = true;
+}
+
 Scheduler.prototype.doneClientChecking = function() {
 	this.client_check_requested = false;
 	this.client_check_timer.restart();
@@ -1587,6 +1850,11 @@ Scheduler.prototype.donePetChecking = function() {
 
 Scheduler.prototype.doneMapChecking = function() {
 	this.map_check_requested = false;
+}
+
+Scheduler.prototype.doneCheckingTheShipsHP = function() {
+	this.ship_hp_check_timer.restart();
+	this.ship_hp_check_requested = false;
 }
 
 Scheduler.prototype.itsTimeToCheckTheClient = function() {
@@ -1624,6 +1892,33 @@ Scheduler.prototype.itsTimeToMoveTheShip = function() {
 	var good_idea = !this.just_collected_something && !this.just_hunted_an_npc;
 	var necessary = !this.navi.shipIsMoving();
 	return good_idea && necessary;
+}
+
+Scheduler.prototype.itsTimeToCheckTheShipsHP = function() {
+	var timeout_in_ms = 5 * 1000;
+	var timeout_expired = this.ship_hp_check_timer.hasExpired(timeout_in_ms);
+	return this.just_hunted_an_npc || this.ship_hp_check_requested || timeout_expired;
+}
+
+Scheduler.prototype.checkTheShipsHP = function() {
+	if (this.ship.isOnCriticalHP() || this.ship.isOnLowHP()) {
+		Helper.log("Ship is on critical or low HP, going to repair it.");
+		this.ship.repairOnNextGate();
+	}
+	this.doneCheckingTheShipsHP();
+}
+
+Scheduler.prototype.checkTheClient = function() {
+	// Reconnect, if disconnected and auto-reconnect is enabled
+	this.checkTheConnection();
+	if (this.script_stop_requested) return;
+
+	// Repair the ship, if destroyed and auto repair is enabled
+	this.checkTheShipStatus();
+	if (this.script_stop_requested) return;
+	
+	// Reset check triggers
+	this.doneClientChecking();
 }
 
 Scheduler.prototype.checkTheConnection = function() {
@@ -1696,7 +1991,18 @@ Scheduler.prototype.checkForLoot = function() {
 }
 
 Scheduler.prototype.checkForNPCs = function() {
-	this.just_hunted_an_npc = this.hunter.huntNPCs();
+	switch (this.hunter.huntNPCs()) {
+		case this.hunter.ATTACKED_SOMETHING:
+			this.just_hunted_an_npc = true;
+			break;
+		case this.hunter.NOTHING_ATTACKED:
+			this.just_hunted_an_npc = false;
+			break;
+		case this.hunter.CRITICAL_SHIP_STATE:
+			this.checkTheShipsHP();
+			this.checkTheClient();
+			return;
+	}
 	Helper.msleep(Config.getValue("hunter_timeout_in_ms"));
 }
 
@@ -1712,17 +2018,12 @@ Scheduler.prototype.runMainAlgorithm = function() {
 
 		if (this.itsTimeToCheckTheClient()) {
 			Helper.debug("Time to check the client...");
+			this.checkTheClient();
+		}
 
-			// Reconnect, if disconnected and auto-reconnect is enabled
-			this.checkTheConnection();
-			if (this.script_stop_requested) return;
-
-			// Repair the ship, if destroyed and auto repair is enabled
-			this.checkTheShipStatus();
-			if (this.script_stop_requested) return;
-			
-			// Reset check triggers
-			this.doneClientChecking();
+		if (this.itsTimeToCheckTheShipsHP()) {
+			Helper.debug("Time to check the ships HP.");
+			this.checkTheShipsHP();
 		}
 
 		if (this.itsTimeToCheckTheMap()) {
@@ -1826,12 +2127,14 @@ function main() {
 	var minimap_window = new IngameWindow(OUTER_MINIMAP_SIZES.slice(-1)[0], MINIMAP_ICON_TPL, MINIMAP_BUTTON_TPL);
 	var user_window = new IngameWindow(USER_WINDOW_SIZE, USER_ICON_TPL, USER_BUTTON_TPL);
 	var pet_window = new IngameWindow(PET_WINDOW_SIZE, PET_ICON_TPL, PET_BUTTON_TPL);
+    var ship_window = new IngameWindow(SHIP_WINDOW_SIZE, SHIP_ICON_TPL, SHIP_BUTTON_TPL);
 
 	var minimap = new Minimap();
 	var pet = new PET();
 	var navi = new Navigator(minimap);
 	var collector = new Collector(client, navi);
-	var hunter = new Hunter(pet, navi, client, user_window);
+    var ship = new Ship(ship_window, navi);
+	var hunter = new Hunter(pet, navi, client, ship, user_window);
 
 	// +----------------------------------+
 	// | Close unnecessary ingame windows |
@@ -1859,9 +2162,13 @@ function main() {
 			return;
 		}
 		if (Config.getValue("hunt_npcs") === true && !user_window.beOpened()) {
-			Helper.log("DATAL! The bot was unable to open the User windows.");
+			Helper.log("FATAL! The bot was unable to open the User window.");
 			return;
 		}
+        if ((Config.getValue("repair_on_low_hp") === true || Config.getValue("flee_on_critical_hp") === true) && !ship_window.beOpened()) {
+            Helper.log("FATAL! The bot was unable to open the Ship window.");
+            return; 
+        }
 	}
 
 	// +------------------------------+
@@ -1894,7 +2201,7 @@ function main() {
 	// +-------------------------------------+
 	
 	Helper.log("Starting to bot.");
-	var scheduler = new Scheduler(client, minimap, pet, collector, hunter, navi);
+	var scheduler = new Scheduler(client, minimap, pet, collector, hunter, navi, ship);
 	scheduler.runMainAlgorithm();
 }
 

@@ -25,7 +25,7 @@
 				]
 			},
 			{
-				"name": "Ship repair",
+				"name": "Ship",
 				"options": [
 					{
 						"id": "auto_reconnect",
@@ -57,7 +57,45 @@
 						"min": 1,
 						"max": 100,
 						"default": 20
-					}
+					},
+                    {
+                        "id": "repair_on_low_hp",
+                        "type": "boolean",
+                        "label": "Auto repair on low HP",
+                        "default": false
+                    },
+                    {
+                        "id": "low_hp_threshold",
+                        "type": "choice",
+                        "label": "Low HP threshold",
+                        "choices": {
+                            "< 28%": "2",
+                            "< 42%": "3",
+                            "< 57%": "4",
+                            "< 71%": "5",
+                            "< 85%": "6"
+                        },
+                        "default": "3"
+                    },
+                    {
+                        "id": "flee_on_critical_hp",
+                        "type": "boolean",
+                        "label": "Auto. flee on critical low HP",
+                        "default": false
+                    },
+                    {
+                        "id": "critical_hp_threshold",
+                        "type": "choice",
+                        "label": "Critical HP threshold",
+                        "choices": {
+                            "< 14%": "1",
+                            "< 28%": "2",
+                            "< 42%": "3",
+                            "< 57%": "4",
+                            "< 71%": "5"
+                        },
+                        "default": "2"
+                    }
 				]
 			},
 			{
