@@ -153,14 +153,11 @@ var MAPNAME_TPLS = [
 	MAP_41, MAP_42, MAP_43, MAP_44, MAP_45, MAP_51, MAP_52, MAP_53,
 ];
 
-// We use different mapnames to represent the space map as a javascript object.
-// Instead of '4-1' we write '__4_1'.
-
 var INTERN_MAPNAME_MAPPING = [ // Which mapname template in MAPNAME_TPLS corresponds to which mapname.
-	'__1_1', '__1_2', '__1_3', '__1_4', '__1_5', '__1_6', '__1_7', '__1_8',
-	'__2_1', '__2_2', '__2_3', '__2_4', '__2_5', '__2_6', '__2_7', '__2_8',
-	'__3_1', '__3_2', '__3_3', '__3_4', '__3_5', '__3_6', '__3_7', '__3_8',
-	'__4_1', '__4_2', '__4_3', '__4_4', '__4_5', '__5_1', '__5_2', '__5_3',
+	"1-1", "1-2", "1-3", "1-4", "1-5", "1-6", "1-7", "1-8",
+	"2-1", "2-2", "2-3", "2-4", "2-5", "2-6", "2-7", "2-8",
+	"3-1", "3-2", "3-3", "3-4", "3-5", "3-6", "3-7", "3-8",
+	"4-1", "4-2", "4-3", "4-4", "4-5", "5-1", "5-2", "5-3",
 ];
 
 var OUTER_MINIMAP_SIZES = [
@@ -207,35 +204,35 @@ var SUPPORTED_MAPS = [
 ];
 
 var MAP_GRAPH = {
-	__1_1: { __1_2: 1 },
-	__1_2: { __1_1: 1, __1_3: 1, __1_4: 1 },
-	__1_3: { __1_2: 1, __1_4: 1, __2_3: 1 },
-	__1_4: { __1_2: 1, __1_3: 1, __3_4: 1, __4_1: 1 },
-	__2_1: { __2_2: 1 },
-	__2_2: { __2_1: 1, __2_3: 1, __2_4: 1 },
-	__2_3: { __1_3: 1, __2_2: 1, __2_4: 1 },
-	__2_4: { __2_2: 1, __2_3: 1, __3_3: 1, __4_2: 1 },
-	__3_1: { __3_2: 1 },
-	__3_2: { __3_1: 1, __3_3: 1, __3_4: 1 },
-	__3_3: { __2_4: 1, __3_2: 1, __3_4: 1 },
-	__3_4: { __1_4: 1, __3_2: 1, __3_3: 1, __4_3: 1 },
-	__4_1: { __1_4: 1, __4_2: 1, __4_3: 1, __4_4: 1 },
-	__4_2: { __2_4: 1, __4_1: 1, __4_3: 1, __4_4: 1 },
-	__4_3: { __3_4: 1, __4_1: 1, __4_2: 1, __4_4: 1 },
-	__4_4: { __1_5: 1, __2_5: 1, __3_5: 1, __4_1: 1, __4_2: 1, __4_3: 1 },
-	__4_5: { __1_5: 1, __2_5: 1, __3_5: 1 },
-	__1_5: { __1_6: 1, __1_7: 1, __4_4: 1, __4_5: 1 },
-	__1_6: { __1_5: 1, __1_8: 1 },
-	__1_7: { __1_5: 1, __1_8: 1 },
-	__1_8: { __1_6: 1, __1_7: 1 },
-	__2_5: { __2_6: 1, __2_7: 1, __4_4: 1, __4_5: 1 },
-	__2_6: { __2_5: 1, __2_8: 1 },
-	__2_7: { __2_5: 1, __2_8: 1 },
-	__2_8: { __2_6: 1, __2_7: 1 },
-	__3_5: { __3_6: 1, __3_7: 1, __4_4: 1, __4_5: 1 },
-	__3_6: { __3_5: 1, __3_8: 1 },
-	__3_7: { __3_5: 1, __3_8: 1 },
-	__3_8: { __3_6: 1, __3_7: 1 }
+	"1-1": { "1-2": 1 },
+	"1-2": { "1-1": 1, "1-3": 1, "1-4": 1 },
+	"1-3": { "1-2": 1, "1-4": 1, "2-3": 1 },
+	"1-4": { "1-2": 1, "1-3": 1, "3-4": 1, "4-1": 1 },
+	"2-1": { "2-2": 1 },
+	"2-2": { "2-1": 1, "2-3": 1, "2-4": 1 },
+	"2-3": { "1-3": 1, "2-2": 1, "2-4": 1 },
+	"2-4": { "2-2": 1, "2-3": 1, "3-3": 1, "4-2": 1 },
+	"3-1": { "3-2": 1 },
+	"3-2": { "3-1": 1, "3-3": 1, "3-4": 1 },
+	"3-3": { "2-4": 1, "3-2": 1, "3-4": 1 },
+	"3-4": { "1-4": 1, "3-2": 1, "3-3": 1, "4-3": 1 },
+	"4-1": { "1-4": 1, "4-2": 1, "4-3": 1, "4-4": 1 },
+	"4-2": { "2-4": 1, "4-1": 1, "4-3": 1, "4-4": 1 },
+	"4-3": { "3-4": 1, "4-1": 1, "4-2": 1, "4-4": 1 },
+	"4-4": { "1-5": 1, "2-5": 1, "3-5": 1, "4-1": 1, "4-2": 1, "4-3": 1 },
+	"4-5": { "1-5": 1, "2-5": 1, "3-5": 1 },
+	"1-5": { "1-6": 1, "1-7": 1, "4-4": 1, "4-5": 1 },
+	"1-6": { "1-5": 1, "1-8": 1 },
+	"1-7": { "1-5": 1, "1-8": 1 },
+	"1-8": { "1-6": 1, "1-7": 1 },
+	"2-5": { "2-6": 1, "2-7": 1, "4-4": 1, "4-5": 1 },
+	"2-6": { "2-5": 1, "2-8": 1 },
+	"2-7": { "2-5": 1, "2-8": 1 },
+	"2-8": { "2-6": 1, "2-7": 1 },
+	"3-5": { "3-6": 1, "3-7": 1, "4-4": 1, "4-5": 1 },
+	"3-6": { "3-5": 1, "3-8": 1 },
+	"3-7": { "3-5": 1, "3-8": 1 },
+	"3-8": { "3-6": 1, "3-7": 1 }
 };
 
 var GATE_TL   = [new Point( 17,  17), new Point( 19,  19), new Point( 21,  21), new Point( 24,  24), new Point( 27,  27), new Point( 32,  32), new Point( 39,  39), new Point( 49,  49), new Point( 65,  65)];
@@ -262,36 +259,36 @@ var GATE_45LI = [new Point( 54,  59), new Point( 60,  65), new Point( 66,  72), 
 var GATE_45BI = [new Point(112,  93), new Point(124, 102), new Point(137, 114), new Point(155, 128), new Point(177, 146), new Point(207, 171), new Point(249, 206), new Point(311, 257), new Point(415, 344)];
 
 var JGATE_POS = {
-	__1_1: { __1_2: GATE_BR },
-	__1_2: { __1_1: GATE_TL, __1_3: GATE_TR, __1_4: GATE_BR },
-	__1_3: { __1_2: GATE_BL, __1_4: GATE_BR, __2_3: GATE_TR },
-	__1_4: { __1_2: GATE_TL, __1_3: GATE_TR, __1_5: GATE_CR, __3_4: GATE_BR },
-	__1_5: { __1_4: GATE_CL, __2_5: GATE_TR, __3_5: GATE_BR, __4_1: GATE_CC },
-	__2_1: { __2_2: GATE_BL },
-	__2_2: { __2_1: GATE_TR, __2_3: GATE_BL, __2_4: GATE_BR },
-	__2_3: { __2_2: GATE_TR, __2_4: GATE_BR, __1_3: GATE_BL },
-	__2_4: { __2_2: GATE_TL, __2_3: GATE_TR, __2_5: GATE_CB, __3_3: GATE_BL },
-	__2_5: { __2_4: GATE_CT, __1_5: GATE_BL, __3_5: GATE_BR, __4_1: GATE_CC },
-	__3_1: { __3_2: GATE_TL },
-	__3_2: { __3_1: GATE_BR, __3_3: GATE_TR, __3_4: GATE_TL },
-	__3_3: { __3_2: GATE_BR, __3_4: GATE_BL, __2_4: GATE_TL },
-	__3_4: { __3_2: GATE_BR, __3_3: GATE_TR, __3_5: GATE_CT, __1_4: GATE_TL },
-	__3_5: { __3_4: GATE_CR, __1_5: GATE_BL, __2_5: GATE_TL, __4_1: GATE_CC },
-	__4_1: { __1_5: GATE_44LI, __2_5: GATE_44TI, __3_5: GATE_44BI, __7_1: GATE_44L, __8_1: GATE_44T, __9_1: GATE_44B },
-	__5_1: { __6_1: GATE_45BI, __7_1: GATE_45L, __8_1: GATE_45T, __9_1: GATE_45B },
-	__7_1: { __4_1: GATE_CR, __5_1: GATE_BR, __7_2: GATE_TL, __7_3: GATE_BL },
-	__7_2: { __7_1: GATE_BR, __7_4: GATE_BL },
-	__7_3: { __7_1: GATE_TR, __7_4: GATE_TL },
-	__7_4: { __7_2: GATE_TR, __7_3: GATE_BR },
-	__8_1: { __4_1: GATE_BL, __5_1: GATE_BR, __8_2: GATE_TL, __8_3: GATE_TR },
-	__8_2: { __8_1: GATE_BL, __8_4: GATE_TR },
-	__8_3: { __8_1: GATE_BL, __8_4: GATE_TR },
-	__8_4: { __8_2: GATE_BL, __8_3: GATE_BR },
-	__9_1: { __4_1: GATE_TL, __5_1: GATE_TRO, __9_2: GATE_BL, __9_3: GATE_BR },
-	__9_2: { __9_1: GATE_TL, __9_4: GATE_BR },
-	__9_3: { __9_1: GATE_BL, __9_4: GATE_BR },
-	__9_4: { __9_2: GATE_BL, __9_3: GATE_TL }
-};
+	"1-1": { "1-2": GATE_BR },
+	"1-2": { "1-1": GATE_TL, "1-3": GATE_TR, "1-4": GATE_BR },
+	"1-3": { "1-2": GATE_BL, "1-4": GATE_BR, "2-3": GATE_TR },
+	"1-4": { "1-2": GATE_TL, "1-3": GATE_TR, "4-1": GATE_CR, "3-4": GATE_BR },
+	"1-5": { "4-4": GATE_CR, "4-5": GATE_BR, "1-6": GATE_TL, "1-7": GATE_BL },
+	"1-6": { "1-5": GATE_BR, "1-8": GATE_BL },
+	"1-7": { "1-5": GATE_TR, "1-8": GATE_TL },
+	"1-8": { "1-6": GATE_TR, "1-7": GATE_BR },
+	"2-1": { "2-2": GATE_BL },
+	"2-2": { "2-1": GATE_TR, "2-3": GATE_BL, "2-4": GATE_BR },
+	"2-3": { "2-2": GATE_TR, "2-4": GATE_BR, "1-3": GATE_BL },
+	"2-4": { "2-2": GATE_TL, "2-3": GATE_TR, "4-2": GATE_CB, "3-3": GATE_BL },
+	"2-5": { "4-4": GATE_BL, "4-5": GATE_BR, "2-6": GATE_TL, "2-7": GATE_TR },
+	"2-6": { "2-5": GATE_BL, "2-8": GATE_TR },
+	"2-7": { "2-5": GATE_BL, "2-8": GATE_TR },
+	"2-8": { "2-6": GATE_BL, "2-7": GATE_BR },
+	"3-1": { "3-2": GATE_TL },
+	"3-2": { "3-1": GATE_BR, "3-3": GATE_TR, "3-4": GATE_TL },
+	"3-3": { "3-2": GATE_BR, "3-4": GATE_BL, "2-4": GATE_TL },
+	"3-4": { "3-2": GATE_BR, "3-3": GATE_TR, "4-3": GATE_CT, "1-4": GATE_TL },
+	"3-5": { "4-4": GATE_TL, "4-5": GATE_TRO, "3-6": GATE_BL, "3-7": GATE_BR },
+	"3-6": { "3-5": GATE_TL, "3-8": GATE_BR },
+	"3-7": { "3-5": GATE_BL, "3-8": GATE_BR },
+	"3-8": { "3-6": GATE_BL, "3-7": GATE_TL },
+	"4-1": { "1-4": GATE_CL, "4-2": GATE_TR, "4-3": GATE_BR, "4-4": GATE_CC },
+	"4-2": { "2-4": GATE_CT, "4-1": GATE_BL, "4-3": GATE_BR, "4-4": GATE_CC },
+	"4-3": { "3-4": GATE_CR, "4-1": GATE_BL, "4-2": GATE_TL, "4-4": GATE_CC },
+	"4-4": { "4-1": GATE_44LI, "4-2": GATE_44TI, "4-3": GATE_44BI, "1-5": GATE_44L, "2-5": GATE_44T, "3-5": GATE_44B },
+	"4-5": { "5-1": GATE_45BI, "1-5": GATE_45L, "2-5": GATE_45T, "3-5": GATE_45B }
+}
 
 var OPTIMISTIC_ACCELERATION_TIME_IN_MS = 500;
 var SAFE_ACCELERATION_TIME_IN_MS = 2000;
@@ -300,20 +297,6 @@ var JUMP_TIMEOUT_IN_MS = 5000;
 // +--------------------------------+
 // | Convenience Methods and Helper |
 // +--------------------------------+
-
-function convertInternToExternMapname(intern_mapname) {
-	if (intern_mapname.indexOf("__") === -1) {
-		Helper.debug(intern_mapname, "is not an intern mapname");
-	}
-	return intern_mapname.replace("__", "").replace("_", "-");
-}
-
-function convertExternToInternMapname(extern_mapname) {
-	if (extern_mapname.indexOf("-") === -1) {
-		Helper.debug(extern_mapname, "is not an extern mapname");
-	}
-	return "__" + extern_mapname.replace("-", "_");
-}
 
 function moveMouseToCenter() {
 	// This methods helps prevents unwished popups of ingame objects.
@@ -472,7 +455,7 @@ IngameWindow.closeAll = function() {
 var Minimap = function() {
 	this.cached_level = undefined;
 	this.cached_position = new Point(-1, -1);
-	this.cached_intern_mapname = "";
+	this.cached_mapname = "";
 };
 
 Minimap.prototype.calculateTelemetry = function(screenshot) {
@@ -583,9 +566,9 @@ Minimap.prototype.getMapnameImage = function() {
 	));
 }
 
-Minimap.prototype.getInternMapname = function(use_cache) {
+Minimap.prototype.getMapname = function(use_cache) {
 	if (use_cache === true) {
-		return this.cached_intern_mapname;
+		return this.cached_mapname;
 	}
 
 	var mapname_image = this.getMapnameImage();
@@ -600,8 +583,8 @@ Minimap.prototype.getInternMapname = function(use_cache) {
 		Helper.debug("Mapname match, #" + i + ":", match);
 
 		if (match.isValid()) {
-			this.cached_intern_mapname = INTERN_MAPNAME_MAPPING[i];
-			return this.cached_intern_mapname;
+			this.cached_mapname = INTERN_MAPNAME_MAPPING[i];
+			return this.cached_mapname;
 		}
 	}
 
@@ -674,70 +657,54 @@ Navigator.prototype.shipIsMoving = function() {
 	return pixel_equality < 0.97;
 }
 
-Navigator.prototype.navigateToMap = function(dest_intern_mapname) {
-	var current_intern_mapname = this.minimap.getInternMapname();
+Navigator.prototype.navigateToMap = function(dest_mapname) {
+	var current_mapname = this.minimap.getMapname();
 
-	if (current_intern_mapname == "") {
+	if (current_mapname == "") {
 		Helper.debug("Current map unknown (navigateToMap)");
 		return;
 	}
 	
-	if (current_intern_mapname === dest_intern_mapname) {
+	if (current_mapname === dest_mapname) {
 		Helper.log("We are already on the destination map.");
 		return;
 	}
 
-	var ex_cm = convertInternToExternMapname(current_intern_mapname);
-	var ex_dm = convertInternToExternMapname(dest_intern_mapname);
-
-	var route = Algorithm.dijkstra(MAP_GRAPH, current_intern_mapname, dest_intern_mapname);
+	var route = Algorithm.dijkstra(MAP_GRAPH, current_mapname, dest_mapname);
 	if (route.length == 0) {
-		Helper.log("No route from", ex_cm, "to", ex_dm, "found.");
+		Helper.log("No route from", current_mapname, "to", dest_mapname, "found.");
 		return;
 	}
 
-	Helper.debug("Disjkstra path to destination map:", route);
+	Helper.log("Route from", current_mapname, "to", dest_mapname, "found:", route);
 	route.shift(); // remove first element (the map were currently on)
 
-	var route_found_message = "Route from " + ex_cm + " to " + ex_dm + " found: " + ex_cm;
-	for (var i = 0; i < route.length; i++) {
-		route_found_message += " -> " + convertInternToExternMapname(route[i]);
-	}
-	Helper.log(route_found_message);
-
 	// Travel and jump from map to map.
-
 	for (var i = 0; i < route.length; i++) {
 		var waypoint = route[i];
-
-		var ex_wp = convertInternToExternMapname(waypoint);
-		Helper.log("Trying to navigate and jump to", ex_wp);
+		Helper.log("Trying to navigate and jump to", waypoint);
 
 		if (!this.jumpTo(waypoint)) {
-			Helper.log("Navigating and jumping to", ex_wp, "failed");
+			Helper.log("Navigating and jumping to", waypoint, "failed");
 			return;
 		}
 	}
 }
 
-Navigator.prototype.jumpTo = function(dest_intern_mapname) {
-	var current_intern_mapname = this.minimap.getInternMapname(false); // Do not use the cached mapname
+Navigator.prototype.jumpTo = function(dest_mapname) {
+	var current_mapname = this.minimap.getMapname(false); // Do not use the cached mapname
 	var mm_level = this.minimap.getLevel(true); // Use the cached level
-	var dest_jgate_pos;
 	
-	try {
-		dest_jgate_pos = JGATE_POS[current_intern_mapname][dest_intern_mapname][mm_level];		
-	} catch (err) {
-		Helper.debug("Getting the JGATE pos for", current_intern_mapname, dest_intern_mapname, mm_level, "failed");
-		Helper.debug("^", err);
+	if (current_mapname == "" || mm_level == -1) {
+		Helper.log("Unable to travel and jump to", dest_mapname);
 		return false;
 	}
-
-	var rdm = convertInternToExternMapname(dest_intern_mapname);
-	Helper.log("Trying to travel to", rdm);
+	
+	var dest_jgate_pos = JGATE_POS[current_mapname][dest_mapname][mm_level];
+	Helper.log("Trying to travel to", dest_mapname);
 
 	if (!this.travelTo(dest_jgate_pos)) {
-		Helper.log("Unable to travel to", rdm);
+		Helper.log("Unable to travel to", dest_mapname);
 		return false;
 	}
 
@@ -796,46 +763,17 @@ Navigator.prototype.monitorQuickFlight = function(max_flight_time_in_ms) {
 	return true; // Ship reached destination
 }
 
-/*
-Navigator.prototype.getThePositionOfARandomGateOnTheCurrentMap = function() {
-	var current_intern_mapname = this.minimap.getInternMapname(false); // Do not use the cached mapname
-	var mm_level = this.minimap.getLevel(true); // Use the cached level
-
-	if (current_intern_mapname === "" || mm_level === -1) {
-		Helper.debug("Unable to get a random gate on the current map.");
-		return new Point(-1, -1);
-	}
-
-	var nearby_gates = JGATE_POS[current_intern_mapname];	
-	var keys = Object.keys(nearby_gates);
-	var random_gate = nearby_gates[keys[keys.length * Math.random() << 0]];
-
-	var gate_pos = random_gate[mm_level];
-	return gate_pos;
-}
-
-Navigator.prototype.travelToRandomGateOnCurrentMap = function() {
-	var gate_pos = this.getThePositionOfARandomGateOnTheCurrentMap();
-	if (gate_pos.getX() === -1) {
-		Helper.debug("Unable to travel to a random gate on the current map.");
-		return false;
-	}
-	this.travelTo(gate_pos);
-	return true;
-}
-*/
-
 Navigator.prototype.getPosOfNextDemilitarizedZone = function() {
-	var current_intern_mapname = this.minimap.getInternMapname(false);
+	var current_mapname = this.minimap.getMapname(false);
 	var mm_level = this.minimap.getLevel(true);
 	var ship_pos = this.minimap.getShipPosition();
 
-	if (current_intern_mapname === "" || mm_level === -1) {
+	if (current_mapname === "" || mm_level === -1) {
 		Helper.debug("Unable to get the position of the next demilitarized zone.");
 		return new Point(-1, -1);
 	}
 
-	var gate_positions = JGATE_POS[current_intern_mapname];	
+	var gate_positions = JGATE_POS[current_mapname];
 	var keys = Object.keys(gate_positions);
 
 	// Provide a valid value we can compare other gates positions to.
@@ -1964,10 +1902,10 @@ Scheduler.prototype.checkTheShipStatus = function() {
 }
 
 Scheduler.prototype.checkTheCurrentMap = function() {
-	var dest_intern_mapname = convertExternToInternMapname(Config.getValue("map"));
-	this.navi.navigateToMap(dest_intern_mapname);
+	var dest_mapname = Config.getValue("map");
+	this.navi.navigateToMap(dest_mapname);
 
-	if (this.minimap.getInternMapname() === dest_intern_mapname) {
+	if (this.minimap.getMapname() === dest_mapname) {
 		Helper.debug("We're on the correct map. Map check done.");
 		this.doneMapChecking();
 	} else {
