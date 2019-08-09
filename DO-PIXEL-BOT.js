@@ -1608,7 +1608,7 @@ Hunter.prototype.huntNPCs = function() {
 
 		if (player_to_npc_distance > shooting_range) {
 			Helper.log("Chasing the attacked NPC");
-			Browser.leftClick(selection_match.getRect().getBottom().pointAdded(new Point(0, 22)));
+			Browser.leftClick(selection_match.getRect().getCenter().pointAdded(new Point(0, 22)));
 			Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 		}
 
