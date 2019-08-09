@@ -2085,6 +2085,15 @@ function main() {
 		return;
 	}
 
+	// +-------------------------+
+	// | Prepare the Ship window |
+	// +-------------------------+
+
+	if (!ship.configureHPDisplay()) {
+		Helper.log("FATAL! The bot was unable to find the Ship window and set the HP display from numbers to bars.");
+		return;
+	}
+
 	// +-------------------------------------+
 	// | Ready to bot, running bot algorithm |
 	// +-------------------------------------+
