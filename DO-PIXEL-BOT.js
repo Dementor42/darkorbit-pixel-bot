@@ -2069,13 +2069,20 @@ function main() {
 
 	var outer_minimap = minimap.getOuterRect();
 	var inner_minimap = minimap.getInnerRect();
+	var mapname = minimap.getMapname();
 	
 	Helper.log("Minimap level:", minimap.getLevel());
 	Helper.log("Minimap position:", outer_minimap.getLeft(), outer_minimap.getTop());
 	Helper.log("Minimap size:", outer_minimap.getWidth(), outer_minimap.getHeight());
+	Helper.log("Minimap mapname:", mapname);
 
 	if (minimap.isBackgroundVisible()) {
 		Helper.log("FATAL! Turn off your minimap background. Otherwise ship position detection may fail.");
+		return;
+	}
+
+	if (SUPPORTED_MAPS.indexOf(mapname) === -1) {
+		Helper.log("FATAL! Map", mapname, "is unsupported. Please start from one of these supported maps:", SUPPORTED_MAPS);
 		return;
 	}
 
