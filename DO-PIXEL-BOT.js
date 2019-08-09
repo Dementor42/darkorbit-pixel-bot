@@ -2063,7 +2063,7 @@ function main() {
 	// +------------------------------+	
 
 	if (minimap.getLevel() === undefined) {
-		Helper.log("FATAL! Minimap not found. Make sure you turned the games quality to low.");
+		Helper.log("FATAL! Minimap not found. Make sure ingame windows don't overlap and that window borders are enabled.");
 		return;
 	}
 
@@ -2073,6 +2073,11 @@ function main() {
 	Helper.log("Minimap level:", minimap.getLevel());
 	Helper.log("Minimap position:", outer_minimap.getLeft(), outer_minimap.getTop());
 	Helper.log("Minimap size:", outer_minimap.getWidth(), outer_minimap.getHeight());
+
+	if (minimap.isBackgroundVisible()) {
+		Helper.log("FATAL! Turn off your minimap background. Otherwise ship position detection may fail.");
+		return;
+	}
 
 	// +---------------------------------+
 	// | Find and measure the PET window |
