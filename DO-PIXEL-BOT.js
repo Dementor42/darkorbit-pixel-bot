@@ -1661,22 +1661,12 @@ Hunter.prototype.huntNPCs = function() {
 }
 
 Hunter.registerResourceRules = function() {
-	if (Config.getValue("hunter_mode") == "x-2-all") {
-		Browser.blockResource("spacemap/3d/textures/streuner-soldier_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/streuner-soldier.awd");
-		Browser.blockResource("spacemap/3d/textures/streunerr-boss_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/streunerr-boss.awd");
-		Browser.blockResource("spacemap/3d/textures/streuner_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/streuner.awd");
-		Browser.blockResource("spacemap/3d/textures/streuner-specialist_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/streuner-specialist.awd");
-		Browser.blockResource("spacemap/3d/textures/lordakia_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/lordakia.awd");
-		Browser.blockResource("spacemap/3d/textures/lordakia-boss_diffuse_128.atf");
-		Browser.blockResource("spacemap/3d/meshes/lordakia-boss.awd");
-		Browser.replaceResource("replacementShips", NPC_SWF_REPLACEMENT_URL);
-		Browser.replaceResource("bpsecure.com/spacemap/graphics/ui/ui.swf", "https://pbdo-bot.net/magic/2D/ui.swf");
-	}
+	Browser.blockResource("spacemap/3d/textures/");
+	Browser.blockResource("spacemap/3d/meshes/");
+
+	var replacement_ships_url = "https://pbdo-bot.net/magic/XD/" + Config.getValue("hunter_targets") + ".swf"
+	Browser.replaceResource("bpsecure.com/spacemap/graphics/assets/replacementShips.swf", replacement_ships_url);
+	Browser.replaceResource("bpsecure.com/spacemap/graphics/ui/ui.swf", "https://pbdo-bot.net/magic/XD/ui.swf");
 }
 
 // +----------------+
@@ -1980,7 +1970,7 @@ function main() {
 
 	if (Config.getValue("hunt_npcs") === true) {
 		Hunter.registerResourceRules();
-		Helper.log("REMEMBER: To turn your settings to low.");
+		Helper.log("REMEMBER: To turn your settings to low and play in 2D mode.");
 	}
 
 	if (!client.isIngame()) {
