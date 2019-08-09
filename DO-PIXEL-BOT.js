@@ -89,11 +89,6 @@ var SHIP_HPBAR_GREEN_TPL = new Image(SHIP_TPL_DIR + "hpbar_green.png");
 var SHIP_HPBAR_EMPTY_TPL = new Image(SHIP_TPL_DIR + "hpbar_empty.png");
 var SHIP_HPBARS_SUBRECT = new Rect(new Point(31, 36), new Size(64, 15));
 
-var USER_BUTTON_TPL = new Image(WINDOWS_DIR + "user_button.png");
-var USER_ICON_TPL = new Image(WINDOWS_DIR + "user_icon.png");
-var USER_WINDOW_SIZE = new Size(224, 108);
-var USER_CREDITS_OFFSET = new Rect(new Point(114, 30), new Size(108, 16)); // Relative to the user windows borders
-
 var MM_POSMARK_V_TPL = new Image(MINIMAP_DIR + "posmark_v.png");
 var MM_POSMARK_H_TPL = new Image(MINIMAP_DIR + "posmark_h.png");
 
@@ -1420,13 +1415,11 @@ Collector.prototype.collectLoot = function() {
 // | NPC Hunter |
 // +------------+
 
-var Hunter = function(pet, navi, client, ship, user_window) {
+var Hunter = function(pet, navi, client, ship) {
 	this.pet = pet;
 	this.navi = navi;
 	this.client = client;
 	this.ship = ship;
-	this.user_window = user_window;
-	this.last_credits_image = new Image();
 	this.cached_x1_ammo_match = new Match();
 	this.cached_x2_ammo_match = new Match();
 	this.cached_x3_ammo_match = new Match();
@@ -1491,31 +1484,6 @@ Hunter.prototype.findClosestNPCs = function() {
 	var isolated = screenshot.isolateColorRange(NPC_MIN_HSV, NPC_MAX_HSV);
 	var matches = Vision.findBlobs(isolated, NPC_BLOB_TPL);
 	return getClosestMatch(matches);
-}
-
-Hunter.prototype.getCreditsScreenshot = function() {
-	var screenshot = this.user_window.takeScreenshot();
-	var credits_image = screenshot.copy(USER_CREDITS_OFFSET);
-	// Isolate the white text
-	var min_hsv = new Color(0, 0, 0, "hsv");
-	var max_hsv = new Color(10, 255, 255, "hsv");
-	return credits_image.isolateColorRange(min_hsv, max_hsv);
-}
-
-Hunter.prototype.rememberCredits = function() {
-	var credits_image = this.getCreditsScreenshot();
-	if (!credits_image.isNull()) {
-		this.last_credits_image = credits_image;
-		return true;
-	}
-	Helper.debug("The NPC Hunter was unable to remember how many credits to had.");
-	return false;
-}
-
-Hunter.prototype.hasCreditsEarned = function() {
-	var new_credits_image = this.getCreditsScreenshot();
-	var pixel_equality = new_credits_image.pixelEquality(this.last_credits_image);
-	return pixel_equality < 1;
 }
 
 Hunter.prototype.getAmmoIconImage = function() {
@@ -1589,9 +1557,6 @@ Hunter.prototype.huntNPCs = function() {
 		}
 	}
 
-	// Remember how many credits we have. If the credits go up we know we killed the NPC.
-	this.rememberCredits();
-
 	// Start the attack
 	this.toggleAttack();
 
@@ -1627,19 +1592,13 @@ Hunter.prototype.huntNPCs = function() {
 
 	while (true) {
 
-		// Check whether the NPC has been killed
-		if (this.hasCreditsEarned()) {
-			Helper.log("NPC killed.");
-			return this.ATTACKED_SOMETHING;
-		}
-
 		// Check whether the NPC escaped
 		var selection_match = this.findSelection();
 		if (!selection_match.isValid()) {
 			// It takes about 500ms for the credits to update. To inform the user about whether
 			// an NPC got killed or escaped, we would have to wait atleast these 500 ms to make
 			// sure the display got update properly. I decided against this to save the 500 ms.
-			Helper.log("NPC killed or escaped.");
+			Helper.log("NPC killed (or escaped).");
 			return this.ATTACKED_SOMETHING;
 		}
 
@@ -2058,7 +2017,6 @@ function main() {
 	// +----------------------+
 
 	var minimap_window = new IngameWindow(OUTER_MINIMAP_SIZES.slice(-1)[0], MINIMAP_ICON_TPL, MINIMAP_BUTTON_TPL);
-	var user_window = new IngameWindow(USER_WINDOW_SIZE, USER_ICON_TPL, USER_BUTTON_TPL);
 	var pet_window = new IngameWindow(PET_WINDOW_SIZE, PET_ICON_TPL, PET_BUTTON_TPL);
     var ship_window = new IngameWindow(SHIP_WINDOW_SIZE, SHIP_ICON_TPL, SHIP_BUTTON_TPL);
 
@@ -2067,7 +2025,7 @@ function main() {
 	var navi = new Navigator(minimap);
 	var collector = new Collector(client, navi);
     var ship = new Ship(ship_window, navi);
-	var hunter = new Hunter(pet, navi, client, ship, user_window);
+	var hunter = new Hunter(pet, navi, client, ship);
 
 	// +----------------------------------+
 	// | Close unnecessary ingame windows |
@@ -2092,10 +2050,6 @@ function main() {
 		}
 		if (Config.getValue("manage_pet") === true && !pet_window.beOpened()) {
 			Helper.log("FATAL! The bot was unable to open the PET window.");
-			return;
-		}
-		if (Config.getValue("hunt_npcs") === true && !user_window.beOpened()) {
-			Helper.log("FATAL! The bot was unable to open the User window.");
 			return;
 		}
         if ((Config.getValue("repair_on_low_hp") === true || Config.getValue("flee_on_critical_hp") === true) && !ship_window.beOpened()) {
