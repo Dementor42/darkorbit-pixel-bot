@@ -2042,7 +2042,7 @@ function main() {
 			Helper.log("FATAL! The bot was unable to open the PET window.");
 			return;
 		}
-        if ((Config.getValue("repair_on_low_hp") === true || Config.getValue("flee_on_critical_hp") === true) && !ship_window.beOpened()) {
+        if (!ship_window.beOpened()) {
             Helper.log("FATAL! The bot was unable to open the Ship window.");
             return; 
         }
