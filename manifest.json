@@ -210,15 +210,15 @@
 						"label": "What to hunt?",
 						"default": "x2.1",
 						"choices": {
-							"Recruit-, Aider-, Boss-, Streuner, Boss-, Lordakia": "x2.1",
-							"Lordakia, Saimon, Boss-, Mordon, Devolarium": "x3.1",
-							"Lordakia, Boss-, Saimon, Mordon": "x4.1",
-							"Lordakia, Boss-, Saimon, Mordon, Sibelon": "x4.2",
-							"Lordakia, Boss-, Sibelonit": "x5.1",
-							"Lordakia, Boss-, Sibelonit, Lordakium": "x5.2",
-							"Boss-, Kristallin": "x7.1",
-							"Boss-, Kristallin, Kristallon": "x7.2",
-							"Boss-, StreuneR": "x8.1"
+							"Recruit-/Aider-/Boss-/Streuner, Boss-/Lordakia": "x2.1",
+							"Lordakia, Saimon; Boss-/Mordon, Devolarium": "x3.1",
+							"Lordakia, Boss-/Saimon, Mordon": "x4.1",
+							"Lordakia, Boss-/Saimon, Mordon, Sibelon": "x4.2",
+							"Lordakia, Boss-/Sibelonit": "x5.1",
+							"Lordakia, Boss-/Sibelonit, Lordakium": "x5.2",
+							"Boss-/Kristallin": "x7.1",
+							"Boss-/Kristallin, Kristallon": "x7.2",
+							"Boss-/StreuneR": "x8.1"
 						}
 					},
 					{
