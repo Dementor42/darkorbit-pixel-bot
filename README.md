@@ -20,5 +20,5 @@ Take a look at the features and roadmap section to see what this free and openso
 - [ ] Automatic Cloak CPU activation
 - [x] Automatic Bonus Box collection
 - [ ] Automatic Pirate Booty collection
-- [ ] Automatical flee on low HP
+- [x] Automatically flee on low HP
 - [x] Automatic NPC Shooting on lower maps
