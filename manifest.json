@@ -265,6 +265,18 @@
 			{
 				"name": "General",
 				"options": [
+                    {
+						"id": "main_browser_size",
+						"type": "choice",
+						"label": "Main browser size",
+						"default": "1440x789",
+						"choices": {
+                            "1366x768": "1366x657",
+                            "1440x900": "1440x789",
+                            "1680x1050": "1680x939",
+                            "1920x1080": "1920x969"
+						}
+                    },
 					{
 						"id": "client_check_timeout_in_seconds",
 						"type": "integer",
@@ -278,6 +290,14 @@
 			{
 				"name": "Advanced (be carefull)",
 				"options": [
+					{
+						"id": "login_delay_in_secs",
+						"type": "integer",
+						"label": "How long to wait for the login page to load",
+						"default": 3,
+						"min": 1,
+						"max": 45
+					},
 					{
 						"id": "start_delay_in_secs",
 						"type": "integer",

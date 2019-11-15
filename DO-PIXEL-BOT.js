@@ -1,3 +1,12 @@
+// +---------------------+
+// | Version Information |
+// +---------------------+
+
+for (var i=0; i<3; i++) { Helper.log(" "); }
+Helper.log("### BOTFATHER VERSION 6.x.x REQUIRED ###")
+Helper.log("(You might need to update)");
+for (var i=0; i<3; i++) { Helper.log(" "); }
+
 // +---------------------------------------------------------------------+
 // | Templates and Data (DON'T TOUCH ANYTHING BELOW THIS LINE AS A USER) |
 // +---------------------------------------------------------------------+
@@ -289,29 +298,39 @@ var OPTIMISTIC_ACCELERATION_TIME_IN_MS = 500;
 var SAFE_ACCELERATION_TIME_IN_MS = 2000;
 var JUMP_TIMEOUT_IN_MS = 5000;
 
+// +----------------------------+
+// | Global MAIN_BROWSER.Definitions |
+// +----------------------------+
+
+var MAIN_BROWSER_SIZE_ARRAY = Config.getValue("main_browser_size").split("x");
+var MAIN_BROWSER_SIZE = new Size(
+    parseInt(MAIN_BROWSER_SIZE_ARRAY[0]),
+    parseInt(MAIN_BROWSER_SIZE_ARRAY[1])
+);
+var MAIN_BROWSER = new Browser("Main Browser", MAIN_BROWSER_SIZE);
+
 // +--------------------------------+
 // | Convenience Methods and Helper |
 // +--------------------------------+
 
 function moveMouseToCenter() {
 	// This methods helps prevents unwished popups of ingame objects.
-	Browser.moveMouseTo(Browser.getRect().getCenter());
+	MAIN_BROWSER.moveMouse(MAIN_BROWSER.getRect().getCenter());
 }
 
 function leftClickAndPreventHover(point) {
-	Browser.leftClick(point);
+	MAIN_BROWSER.leftClick(point);
 	moveMouseToCenter();
 }
 
 function getClosestMatch(matches) {
 	var closest_match = new Match();
-	var center = Browser.getRect().getCenter();
+	var center = MAIN_BROWSER.getRect().getCenter();
 
 	for (var i = 0; i < matches.length; i++) {
 		var match = matches[i];
-
-		var old_dist = closest_match.getRect().getCenter().pointSubtracted(center).manhattanDistance();
-		var new_dist = match.getRect().getCenter().pointSubtracted(center).manhattanDistance();
+        var old_dist = closest_match.rect.center.distanceTo(center);
+        var new_dist = match.rect.center.distanceTo(center);
 
 		if (!closest_match.isValid() || new_dist < old_dist) {
 			closest_match = match;
@@ -319,14 +338,6 @@ function getClosestMatch(matches) {
 	}
 
 	return closest_match;
-}
-
-function distanceBetween(point1, point2) {
-	// If you read this, please ask the Botfather devs to add a Point.distanceTo(other_point) method.
-	var a = point1.getX() - point2.getX();
-	var b = point1.getY() - point2.getY();
-	var c = Math.sqrt(a*a + b*b);
-	return c;
 }
 
 // +--------------------------+
@@ -342,12 +353,12 @@ var IngameWindow = function(max_size, icon_tpl, button_tpl) {
 }
 
 IngameWindow.prototype.getButtonMatch = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	return Vision.findMatch(screenshot, this.button_tpl, 0.99);
 }
 
 IngameWindow.prototype.getIconMatch = function(pretaken_screenshot) {
-	var screenshot = Browser.takeScreenshot(); // FIXME!!!
+	var screenshot = MAIN_BROWSER.takeScreenshot(); // FIXME!!!
 	return Vision.findMatch(screenshot, this.icon_tpl, 0.99);
 }
 
@@ -415,13 +426,13 @@ IngameWindow.prototype.takeScreenshot = function() {
 
 	// We have to assume the window has been opened before by calling beOpened().
 	// Calling beVisible() within this method causes recursion.
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	return screenshot.copy(this.cached_window);
 }
 
 IngameWindow.getAnyCloseButtonMatch = function() {
 	for (var i = 0; i < CLOSE_BUTTON_TPLS.length; i++) {
-		var screenshot = Browser.takeScreenshot();
+		var screenshot = MAIN_BROWSER.takeScreenshot();
 		var tpl = CLOSE_BUTTON_TPLS[i];
 		var match = Vision.findMatch(screenshot, tpl, 0.99);
 		if (match.isValid()) {
@@ -469,7 +480,7 @@ Minimap.prototype.calculateTelemetry = function(screenshot) {
 
 Minimap.prototype.getLevel = function(ignore_cache) {
 	if (ignore_cache === true || this.cached_level === undefined) {
-		var screenshot = Browser.takeScreenshot();
+		var screenshot = MAIN_BROWSER.takeScreenshot();
 		this.calculateTelemetry(screenshot);
 	}
 	return this.cached_level;
@@ -477,7 +488,7 @@ Minimap.prototype.getLevel = function(ignore_cache) {
 
 Minimap.prototype.getPosition = function(ignore_cache) {
 	if (ignore_cache === true || this.cached_position.x == -1) {
-		var screenshot = Browser.takeScreenshot();
+		var screenshot = MAIN_BROWSER.takeScreenshot();
 		this.calculateTelemetry(screenshot);
 	}
 	return this.cached_position;
@@ -512,17 +523,17 @@ Minimap.prototype.leftClick = function(coords) {
 	var onscreen_x = inner_rect.getLeft() + coords.getX();
 	var onscreen_y = inner_rect.getTop() + coords.getY();
 	var realcoords = new Point(onscreen_x, onscreen_y);
-	Browser.leftClick(realcoords);
+	MAIN_BROWSER.leftClick(realcoords);
 }
 
 Minimap.prototype.getOuterImage = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var outer_mm = this.getOuterRect();
 	return screenshot.copy(outer_mm);
 }
 
 Minimap.prototype.getInnerImage = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var inner_mm = this.getInnerRect();
 	return screenshot.copy(inner_mm);
 }
@@ -634,7 +645,7 @@ Navigator.prototype.generateRandomLocation = function() {
 
 Navigator.prototype.flyToRandomLocation = function() {
 	var random_location = this.generateRandomLocation();
-	Browser.leftClick(random_location);
+	MAIN_BROWSER.leftClick(random_location);
 }
 
 Navigator.prototype.shipIsMoving = function() {
@@ -710,7 +721,7 @@ Navigator.prototype.jumpTo = function(dest_mapname) {
 	Helper.sleep(3);
 	Helper.log("Trying to find and click the jump button.");
 
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var jump_button_match = Vision.findMatch(screenshot, JUMP_BUTTON_TPL, 0.8);
 	Helper.debug("Best jump button match found:", jump_button_match);
 
@@ -719,7 +730,7 @@ Navigator.prototype.jumpTo = function(dest_mapname) {
 		return false;
 	}
 
-	Browser.leftClick(jump_button_match.getRect().getCenter());
+	MAIN_BROWSER.leftClick(jump_button_match.getRect().getCenter());
 	Helper.log("Clicked the jump button.");
 
 	Helper.log("Wait for the jump to complete");
@@ -778,8 +789,8 @@ Navigator.prototype.getPosOfNextDemilitarizedZone = function() {
 	for (var i = keys.length - 1; i > 0; i--) {
 		var current_gate_pos = gate_positions[keys[i]][mm_level];
 		
-		var old_dist = distanceBetween(ship_pos, closest_gate_pos);
-		var new_dist = distanceBetween(ship_pos, current_gate_pos);
+		var old_dist = ship_pos.distanceTo(closest_gate_pos);
+		var new_dist = ship_pos.distanceTo(current_gate_pos);
 		
 		if (new_dist < old_dist) {
 			closest_gate_pos = current_gate_pos;
@@ -813,12 +824,12 @@ Client.prototype.numRevivesDone = function() {
 }
 
 Client.prototype.isDestroyed = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	return Vision.findMatch(screenshot, REPAIR_ON_BASE_TPL, 0.95).isValid();
 }
 
 Client.prototype.revive = function(location) {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var option_match = new Match();
 
 	switch (location) {
@@ -835,7 +846,7 @@ Client.prototype.revive = function(location) {
 	}
 
 	if (option_match.isValid()) {
-		Browser.leftClick(option_match.getRect().getCenter());
+		MAIN_BROWSER.leftClick(option_match.getRect().getCenter());
 		Helper.sleep(1);
 		Helper.log("Selected ship repair location...");
 	}
@@ -852,7 +863,7 @@ Client.prototype.revive = function(location) {
 		return false;
 	}
 
-	Browser.leftClick(button_match.getRect().getCenter());
+	MAIN_BROWSER.leftClick(button_match.getRect().getCenter());
 	Helper.sleep(1);
 
 	Helper.log("Ship repair confirmed.");
@@ -862,12 +873,12 @@ Client.prototype.revive = function(location) {
 }
 
 Client.prototype.isDisconnected = function(pretaken_screenshot) {
-	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : MAIN_BROWSER.takeScreenshot();
 	return Vision.findMatch(screenshot, DISCONNECTED_TPL, 0.95).isValid();
 }
 
 Client.prototype.reconnect = function(pretaken_screenshot) {
-	var screenshot = pretaken_screenshot ? pretaken_screenshot : Browser.takeScreenshot();
+	var screenshot = pretaken_screenshot ? pretaken_screenshot : MAIN_BROWSER.takeScreenshot();
 	var disconnected_match = Vision.findMatch(screenshot, DISCONNECTED_TPL, 0.95);
 
 	if (!disconnected_match.isValid()) {
@@ -879,27 +890,27 @@ Client.prototype.reconnect = function(pretaken_screenshot) {
 	var tpl_bl = disconnected_match.getRect().getBottomLeft();
 	var new_connection_btn = tpl_bl.pointAdded(new Point(10, 10));
 
-	Browser.leftClick(new_connection_btn);
+	MAIN_BROWSER.leftClick(new_connection_btn);
 	Helper.log("Reconnect button clicked.");
 
 	do {
 		Helper.log("Reconnecting...");
 		Helper.sleep(1);
 	}
-	while (Vision.findMatch(Browser.takeScreenshot(), RECONNECTING_TPL, 0.95).isValid());
+	while (Vision.findMatch(MAIN_BROWSER.takeScreenshot(), RECONNECTING_TPL, 0.95).isValid());
 
 	Helper.log("Reconnected.");
 	return true;
 }
 
 Client.prototype.isIngame = function() {
-	if (Browser.getUrl().getQuery().indexOf("internalMapRevolution") === -1) {
+	if (MAIN_BROWSER.getUrl().getQuery().indexOf("internalMapRevolution") === -1) {
 		Helper.debug("Client not ingame. Url does not contain internalMapRevolution");
 		return false;
 	}
 
-	var screenshot = Browser.takeScreenshot();
-	var logout_button_match = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
+	var screenshot = MAIN_BROWSER.takeScreenshot();
+	var logout_button_match = Vision.findMatch(MAIN_BROWSER.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
 
 	Helper.debug("Logout button match (isIngame check):", logout_button_match);
 	return logout_button_match.isValid() || this.isDisconnected() || this.isDestroyed();
@@ -908,46 +919,47 @@ Client.prototype.isIngame = function() {
 Client.prototype.autoLogin = function(username, password) {
 	Helper.log("Loading game website...");
 	
-	Browser.loadUrl("http://darkorbit.com/?lang=en");
-	Browser.finishLoading();
+	MAIN_BROWSER.loadUrl("http://darkorbit.com/?lang=en");
+    Helper.sleep(Config.getValue("login_delay_in_secs"));
+	MAIN_BROWSER.finishLoading();
 
 	Helper.log("Entering account credentials...");
 
 	var fill_uname_js = "document.getElementById('bgcdw_login_form_username').value = '" + username + "';";
-	Browser.executeJavascript(fill_uname_js);
+	MAIN_BROWSER.executeJavascript(fill_uname_js);
 	Helper.sleep(1);
 	
 	var fill_pword_js = "document.getElementById('bgcdw_login_form_password').value = '" + password + "';";
-	Browser.executeJavascript(fill_pword_js);
+	MAIN_BROWSER.executeJavascript(fill_pword_js);
 	Helper.sleep(1);
 	
 	var formsubmit_js = "document.bgcdw_login_form.submit();";
-	Browser.executeJavascript(formsubmit_js);
+	MAIN_BROWSER.executeJavascript(formsubmit_js);
 
 	Helper.log("Form submitted.");
 	Helper.sleep(2);
 
-	Browser.finishLoading();
+	MAIN_BROWSER.finishLoading();
 	this.getIngame();
 }
 
 Client.prototype.getIngame = function() {
-	var ingame_url = Browser.getUrl().getHost() + "/indexInternal.es?action=internalMapRevolution";
+	var ingame_url = MAIN_BROWSER.getUrl().getHost() + "/indexInternal.es?action=internalMapRevolution";
 
-	Browser.loadUrl(ingame_url);
-	Browser.finishLoading();
+	MAIN_BROWSER.loadUrl(ingame_url);
+	MAIN_BROWSER.finishLoading();
 
 	while (!this.isIngame()) {
 		Helper.log("Client is not ingame. Looking for the start button...");
 
-		var screenshot = Browser.takeScreenshot();
+		var screenshot = MAIN_BROWSER.takeScreenshot();
 		var start_button_match = Vision.findMatch(screenshot, START_BUTTON_TPL, 0.94);
 		
 		if (start_button_match.isValid()) {
 			// The start buttons match score is configured low, so the chance that
 			// the game start succeeds is increased. However, a low score results
 			// in the bot clicking faulty matches multiple times.
-			Browser.leftClick(start_button_match.getRect().getCenter());
+			MAIN_BROWSER.leftClick(start_button_match.getRect().getCenter());
 			Helper.log("Tried to click the game start button.");
 		} else {
 			Helper.log("Start button not found. Checking again in 3 seconds.");
@@ -958,21 +970,21 @@ Client.prototype.getIngame = function() {
 }
 
 Client.prototype.modifyResources2D = function() {
-	Browser.replaceResource("box2.swf", LOOT_SWF_URL);
-	Browser.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
-	Browser.replaceResource("winterGiftBox.swf", LOOT_SWF_URL);
-	Browser.replaceResource("icyBox.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("box2.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("winterGiftBox.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("icyBox.swf", LOOT_SWF_URL);
 }
 
 Client.prototype.haltShip = function(ignore_cache) {
 	// TODO: move this once a Ship class exists
 	if (ignore_cache === true || !this.cached_logout_button.isValid()) {
-		this.cached_logout_button = Vision.findMatch(Browser.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
+		this.cached_logout_button = Vision.findMatch(MAIN_BROWSER.takeScreenshot(), LOGOUT_BUTTON_TPL, 0.99);
 		Helper.debug("Cached logout button (haltShip):", this.cached_logout_button);
 	}
 	if (this.cached_logout_button.isValid()) {
 		// Triggering the logout process makes the ship stop moving instantly
-		Browser.leftClick(this.cached_logout_button.getRect().getCenter());
+		MAIN_BROWSER.leftClick(this.cached_logout_button.getRect().getCenter());
 		// It takes a moment for the ship to stop
 		Helper.msleep(Config.getValue("logout_halt_delay_in_ms"));
 		return true;
@@ -1019,7 +1031,7 @@ Ship.prototype.configureHPDisplay = function() {
 		return false;
 	}
 	// Click the ship windows hp display to change it from numbers to bars.
-	Browser.leftClick(ship_window.getTopLeft().pointAdded(SHIP_HPBARS_SUBRECT.getCenter()));
+	MAIN_BROWSER.leftClick(ship_window.getTopLeft().pointAdded(SHIP_HPBARS_SUBRECT.getCenter()));
 	return true;
 }
 
@@ -1036,7 +1048,7 @@ Ship.prototype.isOnCriticalHP = function() {
 }
 
 Ship.prototype.findAndCacheRepairCPU = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	this.rep_match = new Match(); // Default
 	
 	for (var i = 0; i < REP_TPLS.length; i++) {
@@ -1122,7 +1134,7 @@ PET.prototype.numRevivesDone = function() {
 }
 
 PET.prototype.findWindow = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var corner_match = Vision.findMatch(screenshot, PET_WINDOW_CORNER_TPL, 0.99);
 	if (corner_match.isValid()) {
 		this.cached_window_position = corner_match.getRect().getTopLeft();
@@ -1151,7 +1163,7 @@ PET.prototype.relativeToRealCoords = function(relative_coords) {
 }
 
 PET.prototype.getWindowImage = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	return screenshot.copy(this.getWindowRect());
 }
 
@@ -1324,7 +1336,7 @@ var Collector = function(client, navi) {
 
 Collector.prototype.filterAnimationMatches = function(matches) {
 	var filtered_matches = [];
-	var browser_center = Browser.getRect().getCenter();
+	var browser_center = MAIN_BROWSER.getRect().getCenter();
 
 	for (var i = 0; i < matches.length; i++) {
 		var match = matches[i];
@@ -1345,7 +1357,7 @@ Collector.prototype.filterAnimationMatches = function(matches) {
 }
 
 Collector.prototype.findClosestLoot = function(prevent_animation_detection) {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var isolated = screenshot.isolateColorRange(LOOT_MIN_HSV, LOOT_MAX_HSV);
 	var loot_matches = Vision.findBlobs(isolated, LOOT_BLOB_TPL);
 
@@ -1395,7 +1407,7 @@ Collector.prototype.collectLoot = function() {
 
 		Helper.debug("Closest loot found:", closest_loot);
 
-		Browser.leftClick(closest_loot.getRect().getCenter());
+		MAIN_BROWSER.leftClick(closest_loot.getRect().getCenter());
 		Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 
 		if (!this.navi.monitorQuickFlight(10 * 1000)) {
@@ -1428,7 +1440,7 @@ var Hunter = function(pet, navi, client, ship) {
 }
 
 Hunter.prototype.cacheAmmoMatch = function(ammo_tpl, current) {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var ammo_match = current;
 
 	if (!ammo_match.isValid()) {
@@ -1465,12 +1477,12 @@ Hunter.prototype.toggleAttack = function() {
 		Helper.log("Unable to start shooting.");
 		return false;
 	}
-	Browser.leftClick(ammo_match.getRect().getCenter());
+	MAIN_BROWSER.leftClick(ammo_match.getRect().getCenter());
 	return true;
 }
 
 Hunter.prototype.findSelection = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var isolated = screenshot.isolateColorRange(TARGET_MIN_HSV, TARGET_MAX_HSV);
 	var matches = Vision.findBlobs(isolated, TARGET_BLOB_TPL);
 	if (matches.length == 0) {
@@ -1480,7 +1492,7 @@ Hunter.prototype.findSelection = function() {
 }
 
 Hunter.prototype.findClosestNPCs = function() {
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	var isolated = screenshot.isolateColorRange(NPC_MIN_HSV, NPC_MAX_HSV);
 	var matches = Vision.findBlobs(isolated, NPC_BLOB_TPL);
 	return getClosestMatch(matches);
@@ -1493,7 +1505,7 @@ Hunter.prototype.getAmmoIconImage = function() {
 	var ammo_real_tl = ammo_match.getRect().getTopLeft().pointAdded(XX_AMMO_TPL_TO_BTN_BORDER_OFFSET);
 	var ammo_subrect = new Rect(ammo_real_tl, XX_AMMO_TPL_SIZE);
 
-	var screenshot = Browser.takeScreenshot();
+	var screenshot = MAIN_BROWSER.takeScreenshot();
 	return screenshot.copy(ammo_subrect);
 }
 
@@ -1531,7 +1543,7 @@ Hunter.prototype.huntNPCs = function() {
 		// However, if the ship was not moving, we consider the selection attempt a success.
 		// Because if the bot can't select an NPC reliably while standing still, it won't be
 		// able to select and attack NPCs at all due to low hardware specs.
-		Browser.leftClick(npc_match.getRect().getCenter());
+		MAIN_BROWSER.leftClick(npc_match.getRect().getCenter());
 
 		if (!ship_was_moving) {
 			Helper.log("NPC selected."); // Keep the "." in contrast to the "!" below
@@ -1603,12 +1615,12 @@ Hunter.prototype.huntNPCs = function() {
 		}
 
 		// Chase the NPC if necessary
-		var player_to_npc_distance = distanceBetween(selection_match.getRect().getCenter(), Browser.getRect().getCenter());
-		var shooting_range = Math.min(Browser.getSize().getWidth(), Browser.getSize().getHeight()) / 4;
+		var player_to_npc_distance = selection_match.getRect().getCenter().distanceTo(MAIN_BROWSER.getRect().getCenter());
+		var shooting_range = Math.min(MAIN_BROWSER.getSize().getWidth(), MAIN_BROWSER.getSize().getHeight()) / 4;
 
 		if (player_to_npc_distance > shooting_range) {
 			Helper.log("Chasing the attacked NPC");
-			Browser.leftClick(selection_match.getRect().getCenter().pointAdded(new Point(0, 22)));
+			MAIN_BROWSER.leftClick(selection_match.getRect().getCenter().pointAdded(new Point(0, 22)));
 			Helper.msleep(OPTIMISTIC_ACCELERATION_TIME_IN_MS);
 		}
 
@@ -1661,12 +1673,12 @@ Hunter.prototype.huntNPCs = function() {
 }
 
 Hunter.registerResourceRules = function() {
-	Browser.blockResource("spacemap/3d/textures/");
-	Browser.blockResource("spacemap/3d/meshes/");
+	MAIN_BROWSER.blockResource("spacemap/3d/textures/");
+	MAIN_BROWSER.blockResource("spacemap/3d/meshes/");
 
 	var replacement_ships_url = "https://pbdo-bot.net/magic/XD/" + Config.getValue("hunter_targets") + ".swf"
-	Browser.replaceResource("bpsecure.com/spacemap/graphics/assets/replacementShips.swf", replacement_ships_url);
-	Browser.replaceResource("bpsecure.com/spacemap/graphics/ui/ui.swf", "https://pbdo-bot.net/magic/XD/ui.swf");
+	MAIN_BROWSER.replaceResource("bpsecure.com/spacemap/graphics/assets/replacementShips.swf", replacement_ships_url);
+	MAIN_BROWSER.replaceResource("bpsecure.com/spacemap/graphics/ui/ui.swf", "https://pbdo-bot.net/magic/XD/ui.swf");
 }
 
 // +----------------+
@@ -1947,16 +1959,11 @@ Scheduler.prototype.runMainAlgorithm = function() {
 
 function main() {
 
-	// +--------------------------+
-	// | Inform and warn the user |
-	// +--------------------------+
-
-	Helper.log("### ! ! ! DO NOT RESIZE THE BROWSER WHILE RUNNING THIS SCRIPT ! ! ! ###");
-	var client = new Client();
-
 	// +------------------------------+
 	// | Prepare the client and login |
 	// +------------------------------+
+
+	var client = new Client();
 
 	if (Config.getValue("collect_loot") === true && Config.getValue("hunt_npcs") === true) {
 		Helper.log("FATAL: The Loot Collector and NPC Hunter currently can't be used at the same time.");
