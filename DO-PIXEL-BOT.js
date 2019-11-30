@@ -962,6 +962,7 @@ Client.prototype.modifyResources2D = function() {
 	Browser.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
 	Browser.replaceResource("winterGiftBox.swf", LOOT_SWF_URL);
 	Browser.replaceResource("icyBox.swf", LOOT_SWF_URL);
+    Browser.replaceResource("prometheusBox.swf", LOOT_SWF_URL);
 }
 
 Client.prototype.haltShip = function(ignore_cache) {
