@@ -970,11 +970,11 @@ Client.prototype.getIngame = function() {
 }
 
 Client.prototype.modifyResources2D = function() {
-	Browser.replaceResource("box2.swf", LOOT_SWF_URL);
-	Browser.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
-	Browser.replaceResource("winterGiftBox.swf", LOOT_SWF_URL);
-	Browser.replaceResource("icyBox.swf", LOOT_SWF_URL);
-    Browser.replaceResource("prometheusBox.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("box2.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("orangePumpkin.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("winterGiftBox.swf", LOOT_SWF_URL);
+	MAIN_BROWSER.replaceResource("icyBox.swf", LOOT_SWF_URL);
+    MAIN_BROWSER.replaceResource("prometheusBox.swf", LOOT_SWF_URL);
 }
 
 Client.prototype.haltShip = function(ignore_cache) {
