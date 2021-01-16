@@ -950,7 +950,7 @@ Client.prototype.getIngame = function() {
 	MAIN_BROWSER.loadUrl(ingame_url);
 	MAIN_BROWSER.finishLoading();
 
-	while (!this.isIngame()) {
+	do {
 		Helper.log("Client is not ingame. Looking for the start button...");
 
 		var screenshot = MAIN_BROWSER.takeScreenshot();
@@ -967,7 +967,7 @@ Client.prototype.getIngame = function() {
 		}
 
 		Helper.sleep(3);
-	}
+	} while (!this.isIngame());
 }
 
 Client.prototype.modifyResources2D = function() {
