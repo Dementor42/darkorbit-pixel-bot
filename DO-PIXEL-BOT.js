@@ -691,18 +691,18 @@ Navigator.prototype.navigateToMap = function(dest_mapname) {
 		var waypoint = route[i];
 		Helper.log("Trying to navigate and jump to", waypoint);
 
-		if (!this.jumpTo(waypoint)) {
+		if (!this.jumpFromTo(current_mapname, waypoint)) {
 			Helper.log("Navigating and jumping to", waypoint, "failed");
 			return;
 		}
+		current_mapname = waypoint;
 	}
 }
 
-Navigator.prototype.jumpTo = function(dest_mapname) {
-	var current_mapname = this.minimap.getMapname(false); // Do not use the cached mapname
+Navigator.prototype.jumpFromTo = function(current_mapname, dest_mapname) {
 	var mm_level = this.minimap.getLevel(true); // Use the cached level
 	
-	if (current_mapname == "" || mm_level == -1) {
+	if (mm_level == -1) {
 		Helper.log("Unable to travel and jump to", dest_mapname);
 		return false;
 	}
