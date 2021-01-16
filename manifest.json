@@ -278,6 +278,12 @@
 						}
                     },
 					{
+						"id": "main_browser_agent",
+						"type": "string",
+						"label": "Browser User Agent",
+						"default": "BigpointClient/1.0.11"
+					},
+					{
 						"id": "client_check_timeout_in_seconds",
 						"type": "integer",
 						"label": "Timeout in seconds after checking the ship is connected and alive",

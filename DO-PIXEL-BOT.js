@@ -3,7 +3,7 @@
 // +---------------------+
 
 for (var i=0; i<3; i++) { Helper.log(" "); }
-Helper.log("### BOTFATHER VERSION 6.x.x REQUIRED ###")
+Helper.log("### BOTFATHER VERSION 6.6.0 OR LATER REQUIRED ###")
 Helper.log("(You might need to update)");
 for (var i=0; i<3; i++) { Helper.log(" "); }
 
@@ -308,6 +308,7 @@ var MAIN_BROWSER_SIZE = new Size(
     parseInt(MAIN_BROWSER_SIZE_ARRAY[1])
 );
 var MAIN_BROWSER = new Browser("Main Browser", MAIN_BROWSER_SIZE);
+MAIN_BROWSER.setUserAgent(Config.getValue("main_browser_agent"))
 
 // +--------------------------------+
 // | Convenience Methods and Helper |
